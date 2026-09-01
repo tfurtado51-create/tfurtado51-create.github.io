@@ -378,21 +378,7 @@ function saveProgress() {
 }
 
 // 4. LÓGICA DO QUIZ HÍBRIDO
-function getQuestion(topicKey) {
-    const topic = db[topicKey];
-    
-    // Aumentamos a chance de cair questões estáticas (75% de chance)
-    // Os geradores dinâmicos agora aparecem apenas em 25% das vezes
-    const useDynamic = topic.generators && topic.generators.length > 0 && Math.random() > 0.75;
-    
-    if (useDynamic) {
-        const genIndex = Math.floor(Math.random() * topic.generators.length);
-        return topic.generators[genIndex]();
-    } else {
-        const statIndex = Math.floor(Math.random() * topic.questions.length);
-        return topic.questions[statIndex];
-    }
-}
+
 
 // VARIÁVEL NOVA: Guarda as 10 questões únicas da rodada atual
 let currentRoundDeck = []; 
