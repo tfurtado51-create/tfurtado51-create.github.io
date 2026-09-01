@@ -91,6 +91,31 @@ const db = {
     fracoes: {
         title: "Frações",
         questions: [
+            // QUESTÕES VISUAIS DE FRAÇÕES
+            { 
+                q: "Que fração a parte colorida da barra representa?", 
+                visual: `<div style="display: flex; width: 80%; height: 40px; border: 3px solid #333; border-radius: 5px; overflow: hidden;">
+                            <div style="flex: 1; background: #4361ee; border-right: 2px solid #333;"></div>
+                            <div style="flex: 1; background: #4361ee; border-right: 2px solid #333;"></div>
+                            <div style="flex: 1; background: #4361ee; border-right: 2px solid #333;"></div>
+                            <div style="flex: 1; background: #fff;"></div>
+                         </div>`,
+                options: ["1/4", "3/4", "4/3", "1/3"], 
+                answer: 1, 
+                exp: "A barra está dividida em 4 pedaços iguais (denominador 4). 3 desses pedaços estão pintados de azul (numerador 3). Logo, 3/4." 
+            },
+            { 
+                q: "Se você comer a parte colorida desta pizza, que fração você comeu?", 
+                visual: `<svg width="100" height="100" viewBox="0 0 32 32">
+                            <circle r="16" cx="16" cy="16" fill="white" stroke="#333" stroke-width="1"></circle>
+                            <circle r="8" cx="16" cy="16" fill="transparent" stroke="#e74c3c" stroke-width="16" stroke-dasharray="12.56 50.24"></circle>
+                            <line x1="16" y1="0" x2="16" y2="32" stroke="#333" stroke-width="1"></line>
+                            <line x1="0" y1="16" x2="32" y2="16" stroke="#333" stroke-width="1"></line>
+                         </svg>`,
+                options: ["1/2", "3/4", "1/4", "4/4"], 
+                answer: 2, 
+                exp: "A pizza foi dividida em 4 pedaços e apenas 1 está colorido de vermelho. Isso representa 1/4 (um quarto)." 
+            },
             { q: "Como lemos a fração 3/4?", options: ["Três quartos", "Três e quatro", "Quarto e três", "Trinta e quatro"], answer: 0, exp: "O número de cima (numerador) lemos normalmente como 'três'. O de baixo (denominador) lemos como 'quartos'. Logo, três quartos." },
             { q: "Qual fração representa a metade de um chocolate?", options: ["1/4", "2/3", "1/2", "1/3"], answer: 2, exp: "A metade significa dividir o inteiro em 2 partes e pegar 1. Portanto, 1/2." },
             { q: "Como se escreve 'cinco oitavos' em fração?", options: ["8/5", "5/8", "58", "5/10"], answer: 1, exp: "O numerador é 5 (em cima) e o denominador é 8 (em baixo), indicando que o inteiro foi dividido em 8 partes e pegamos 5." },
@@ -134,6 +159,17 @@ const db = {
     medidas: {
         title: "Combinações e Medidas",
         questions: [
+            // QUESTÃO VISUAL DE COMBINAÇÕES
+            { 
+                q: "O Antonio tem essas opções de roupas. Quantas combinações diferentes (1 blusa + 1 calça) ele pode fazer?", 
+                visual: `<div style="font-size: 40px; text-align: center;">
+                            <div>👕 👕 👕</div>
+                            <div style="margin-top: 10px;">👖 👖</div>
+                         </div>`,
+                options: ["3", "5", "6", "9"], 
+                answer: 2, 
+                exp: "Temos 3 blusas e 2 calças. Para saber as combinações, multiplicamos: 3 x 2 = 6." 
+            },
             { q: "Quantos centímetros (cm) formam 1 metro (m)?", options: ["10 cm", "100 cm", "1000 cm", "1 cm"], answer: 1, exp: "O prefixo 'centi' significa centésima parte. Logo, 1 metro possui exatamente 100 centímetros." },
             { q: "Para medir a distância entre duas cidades, qual unidade usamos?", options: ["Centímetro (cm)", "Metro (m)", "Quilômetro (km)", "Milímetro (mm)"], answer: 2, exp: "Usamos o Quilômetro (km) para medir grandes distâncias." },
             { q: "Quantos gramas (g) tem 1 quilograma (kg)?", options: ["10 g", "100 g", "1000 g", "10000 g"], answer: 2, exp: "O prefixo 'quilo' significa mil. Portanto, 1 quilograma equivale a 1000 gramas." },
