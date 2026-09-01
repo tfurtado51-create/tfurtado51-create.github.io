@@ -154,6 +154,36 @@ const db = {
                     exp: `Mantemos o denominador (${den}) e somamos apenas os numeradores (${n1} + ${n2} = ${soma}).`
                 };
             }
+            ,function() { // Gerador Visual Dinâmico de Frações (Barras)
+                let den = Math.floor(Math.random() * 5) + 3; // Sorteia de 3 a 7 pedaços
+                let num = Math.floor(Math.random() * (den - 1)) + 1; // Sorteia quantos estão pintados
+                
+                // O código abaixo desenha a barra dinamicamente
+                let barrasHTML = '';
+                for(let i = 0; i < den; i++) {
+                    let cor = (i < num) ? '#2ecc71' : '#fff'; // Pinta de verde ou deixa branco
+                    barrasHTML += `<div style="flex: 1; background: ${cor}; border-right: 1px solid #333;"></div>`;
+                }
+                let visualCode = `<div style="display: flex; width: 80%; height: 40px; border: 3px solid #333; border-radius: 5px; overflow: hidden;">${barrasHTML}</div>`;
+                
+                let ans = `${num}/${den}`;
+                let err1 = `${num + 1}/${den}`;
+                let err2 = `${num}/${den + 1}`;
+                let err3 = `${den}/${num}`; // Invertido
+                
+                let opcoes = [ans, err1, err2, err3];
+                opcoes = [...new Set(opcoes)]; // Remove duplicadas se houver
+                while(opcoes.length < 4) opcoes.push(`${Math.floor(Math.random()*3)+1}/${den+2}`); // Garante 4 opções
+                opcoes.sort(() => Math.random() - 0.5);
+                
+                return {
+                    q: "Que fração a parte pintada de verde representa?",
+                    visual: visualCode,
+                    options: opcoes, 
+                    answer: opcoes.indexOf(ans),
+                    exp: `A barra inteira foi dividida em ${den} pedaços (denominador). Temos ${num} pedaços pintados (numerador). Logo, a fração é ${ans}.`
+                };
+            }
         ]
     },
     medidas: {
@@ -204,6 +234,34 @@ const db = {
                     q: `Um pacote pesa ${kg} kg. Quantos gramas (g) ele tem?`,
                     options: opcoes, answer: opcoes.indexOf(ans),
                     exp: `Cada 1 kg equivale a 1000 g. Portanto, multiplicamos ${kg} por 1000, resultando em ${g} g.`
+                };
+            }
+            ,function() { // Gerador Visual Dinâmico de Combinações (Futebol)
+                let camisas = Math.floor(Math.random() * 4) + 2; // Sorteia de 2 a 5 camisas
+                let chuteiras = Math.floor(Math.random() * 3) + 2; // Sorteia de 2 a 4 chuteiras
+                
+                // O JavaScript repete os emojis de acordo com os números sorteados
+                let visualCode = `<div style="font-size: 35px; text-align: center; background: #eef2f3; padding: 10px; border-radius: 10px;">
+                                    <div>${'⚽ '.repeat(camisas)}</div>
+                                    <div style="margin-top: 10px;">${'👟 '.repeat(chuteiras)}</div>
+                                 </div>`;
+                
+                let ans = camisas * chuteiras;
+                let err1 = camisas + chuteiras; // Erro comum: somar em vez de multiplicar
+                let err2 = ans + 2;
+                let err3 = ans - 2 || 1;
+                
+                let opcoes = [ans.toString(), err1.toString(), err2.toString(), err3.toString()];
+                opcoes = [...new Set(opcoes)];
+                while(opcoes.length < 4) opcoes.push((ans + 3).toString());
+                opcoes.sort(() => Math.random() - 0.5);
+                
+                return {
+                    q: `O Antonio tem ${camisas} bolas e ${chuteiras} pares de chuteira. Quantas combinações diferentes ele pode usar para jogar no campo?`,
+                    visual: visualCode,
+                    options: opcoes, 
+                    answer: opcoes.indexOf(ans.toString()),
+                    exp: `Para descobrir o número de combinações, multiplicamos as opções: ${camisas} bolas × ${chuteiras} chuteiras = ${ans} combinações.`
                 };
             }
         ]
