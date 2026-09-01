@@ -388,38 +388,49 @@ function startTopic(key) {
     questionsAnswered = 0;
     currentRoundDeck = [];
     
-    // Cria a memória de questões que ele já ACERTOU
+    // 1. Verifica se a memória de acertos existe
     if (!progress[key].acertadas) progress[key].acertadas = [];
     
-    // Filtra as questões estáticas tirando aquelas que ele JÁ ACERTOU
+    // 2. Separa apenas as questões de texto que ele AINDA NÃO acertou
     let allStatic = [...db[key].questions];
     let unseenStatic = allStatic.filter(q => !progress[key].acertadas.includes(q.q));
     
-    // Se ele já acertou (quase) todas, zeramos a memória para ele revisar o tema
-    if (unseenStatic.length < 5) {
+    // 3. CORREÇÃO: Só apaga a memória se ele REALMENTE tiver zerado TODAS as questões de texto
+    if (unseenStatic.length === 0) {
         progress[key].acertadas = [];
         unseenStatic = [...allStatic];
     }
     
-    unseenStatic.sort(() => Math.random() - 0.5); // Embaralha
-    
+    unseenStatic.sort(() => Math.random() - 0.5); // Embaralha as de texto
     let hasGenerators = db[key].generators && db[key].generators.length > 0;
     
-    // Monta o "Baralho" com 10 questões para esta rodada
-    for (let i = 0; i < QUESTIONS_PER_ROUND; i++) {
-        let useDynamic = hasGenerators && (Math.random() < 0.25); // 25% de chance de ser o gerador infinito
+    // 4. CORREÇÃO: Monta o Baralho verificando duplicatas ativamente
+    while (currentRoundDeck.length < QUESTIONS_PER_ROUND) {
+        let newQuestion = null;
         
-        if (!useDynamic && unseenStatic.length > 0) {
-            currentRoundDeck.push(unseenStatic.pop());
-        } else if (hasGenerators) {
+        // Usa o robô se as de texto acabaram, OU com 30% de chance se ainda tiver de texto
+        let useDynamic = hasGenerators && (unseenStatic.length === 0 || Math.random() < 0.30);
+        
+        if (useDynamic) {
             let genIndex = Math.floor(Math.random() * db[key].generators.length);
-            currentRoundDeck.push(db[key].generators[genIndex]());
+            newQuestion = db[key].generators[genIndex]();
         } else {
             if (unseenStatic.length === 0) {
+                // Segurança caso zere a lista no meio da montagem da rodada
                 unseenStatic = [...allStatic].sort(() => Math.random() - 0.5);
-                progress[key].acertadas = []; // Zera se acabar no meio da montagem
+                progress[key].acertadas = []; 
             }
-            currentRoundDeck.push(unseenStatic.pop());
+            newQuestion = unseenStatic.pop();
+        }
+        
+        // VERIFICAÇÃO DE REPETIÇÃO NA MESMA RODADA:
+        let isDuplicate = currentRoundDeck.some(q => q.q === newQuestion.q);
+        
+        if (!isDuplicate) {
+            currentRoundDeck.push(newQuestion); // Se for inédita na rodada, entra no baralho
+        } else {
+            // Se for repetida e for de texto, devolve para a pilha para sortear de novo depois
+            if (!useDynamic) unseenStatic.unshift(newQuestion); 
         }
     }
     
