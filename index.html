@@ -81,222 +81,282 @@
     </div>
 
     <script>
-        // 1. BANCO DE QUESTÕES (Fácil de expandir futuramente)
-        const db = {
+        // 1. BANCO DE DADOS HÍBRIDO (Estáticas + Geradores Dinâmicos)
+const db = {
     fracoes: {
         title: "Frações",
         questions: [
-            // Nível Fácil: Leitura e Conceitos Básicos
             { q: "Como lemos a fração 3/4?", options: ["Três quartos", "Três e quatro", "Quarto e três", "Trinta e quatro"], answer: 0, exp: "O número de cima (numerador) lemos normalmente como 'três'. O de baixo (denominador) lemos como 'quartos'. Logo, três quartos." },
             { q: "Qual fração representa a metade de um chocolate?", options: ["1/4", "2/3", "1/2", "1/3"], answer: 2, exp: "A metade significa dividir o inteiro em 2 partes e pegar 1. Portanto, 1/2." },
             { q: "Como se escreve 'cinco oitavos' em fração?", options: ["8/5", "5/8", "58", "5/10"], answer: 1, exp: "O numerador é 5 (em cima) e o denominador é 8 (em baixo), indicando que o inteiro foi dividido em 8 partes e pegamos 5." },
             { q: "Qual fração representa um inteiro completo, ou seja, uma pizza inteira que foi cortada em 4 pedaços?", options: ["1/4", "3/4", "4/4", "2/4"], answer: 2, exp: "Se a pizza foi cortada em 4 pedaços e você tem todos eles, você tem 4 pedaços de 4 totais (4/4), que equivale a 1 inteiro." },
-            // Nível Médio: Adição, Subtração e Equivalência
             { q: "O que é maior: 3/5 ou 1/5?", options: ["3/5", "1/5", "São iguais", "Depende"], answer: 0, exp: "Como os denominadores (5) são iguais, os pedaços têm o mesmo tamanho. Ter 3 pedaços é mais do que ter apenas 1." },
             { q: "Qual é o resultado da adição 2/7 + 3/7?", options: ["5/14", "6/7", "5/7", "1/7"], answer: 2, exp: "Na adição com o mesmo denominador, mantemos o número de baixo (7) e somamos apenas os de cima (2 + 3 = 5)." },
             { q: "Resolva a subtração: 8/9 - 4/9", options: ["12/9", "4/0", "4/9", "4/18"], answer: 2, exp: "Mantemos o denominador (9) e subtraímos apenas os numeradores (8 - 4 = 4). O resultado é 4/9." },
             { q: "Qual fração é equivalente a 1/2?", options: ["2/4", "1/4", "3/8", "2/3"], answer: 0, exp: "Se você multiplicar o número de cima e o de baixo de 1/2 por 2, obterá 2/4. Ambas representam a mesma quantidade (a metade)." },
             { q: "O que significa uma fração como 5/4?", options: ["É menor que um inteiro", "É exatamente um inteiro", "É maior que um inteiro", "É igual a 1/4"], answer: 2, exp: "Como o numerador (5) é maior que o denominador (4), significa que você tem mais do que 4 pedaços necessários para formar 1 inteiro. Logo, é maior que um inteiro." },
             { q: "Qual fração é equivalente a 2/3?", options: ["4/9", "3/2", "4/6", "2/6"], answer: 2, exp: "Multiplicando o numerador (2) e o denominador (3) por 2, temos 4/6. As duas frações representam o mesmo tamanho." },
-            // Nível Difícil: Quantidades e Problemas
             { q: "Quanto é 1/4 de 40 reais?", options: ["4 reais", "10 reais", "20 reais", "40 reais"], answer: 1, exp: "Para achar 1/4, dividimos o total pelo denominador (40 ÷ 4 = 10) e multiplicamos pelo numerador (10 × 1 = 10)." },
             { q: "Quanto é 2/5 de 20 bolinhas?", options: ["4 bolinhas", "8 bolinhas", "10 bolinhas", "15 bolinhas"], answer: 1, exp: "Primeiro dividimos pelo de baixo: 20 ÷ 5 = 4. Depois, multiplicamos pelo de cima: 4 × 2 = 8 bolinhas." },
             { q: "O Antonio comeu 3/8 de uma pizza e o seu irmão comeu 2/8. Quanto sobrou da pizza?", options: ["5/8", "3/8", "1/8", "8/8"], answer: 1, exp: "Eles comeram juntos 5/8 (3/8 + 2/8). A pizza inteira é 8/8. Subtraindo o que comeram (8/8 - 5/8), sobram 3/8." },
             { q: "Se eu li 1/3 de um livro de 90 páginas, quantas páginas eu já li?", options: ["30", "60", "90", "10"], answer: 0, exp: "Dividimos o total de páginas por 3 (90 ÷ 3 = 30) e multiplicamos por 1. Você leu 30 páginas." },
             { q: "Coloque em ordem crescente (do menor para o maior): 1/6, 5/6, 3/6.", options: ["5/6, 3/6, 1/6", "1/6, 5/6, 3/6", "3/6, 1/6, 5/6", "1/6, 3/6, 5/6"], answer: 3, exp: "Com denominadores iguais, olhamos os numeradores: 1 é o menor, 3 é o do meio, e 5 é o maior." },
-            { q: "Qual dessas frações é a MAIOR?", options: ["1/8", "1/2", "1/4", "1/6"], answer: 1, exp: "Quando o numerador é igual (1), a fração com o MENOR denominador é a maior, pois significa que o inteiro foi dividido em menos partes. Logo, 1/2 (a metade) é a maior." },
+            { q: "Qual dessas frações é a MAIOR?", options: ["1/8", "1/2", "1/4", "1/6"], answer: 1, exp: "Quando o numerador é igual (1), a fração com o MENOR denominador é a maior. Logo, 1/2 (a metade) é a maior." },
             { q: "Resolva: (3/10 + 4/10) - 2/10", options: ["9/10", "1/10", "5/10", "7/10"], answer: 2, exp: "Primeiro somamos: 3 + 4 = 7. A conta fica 7/10 - 2/10. Subtraindo: 7 - 2 = 5. Resultado: 5/10." },
             { q: "Uma caixa tem 24 lápis. 3/4 deles são coloridos. Quantos lápis coloridos há na caixa?", options: ["6", "12", "18", "24"], answer: 2, exp: "Dividimos 24 por 4 = 6. Multiplicamos por 3 = 18 lápis coloridos." },
             { q: "Qual destas frações NÃO é equivalente a 1/2?", options: ["2/4", "5/10", "4/8", "3/5"], answer: 3, exp: "2/4, 5/10 e 4/8 representam a metade. 3/5 representa mais da metade, então não é equivalente." },
-            { q: "Se 4/4 é igual a 1 inteiro, o que é 8/4?", options: ["1 inteiro", "2 inteiros", "4 inteiros", "8 inteiros"], answer: 1, exp: "Cada grupo de 4 quartos forma 1 inteiro. Como você tem 8 quartos (o dobro de 4), você tem 2 inteiros completos (8 ÷ 4 = 2)." }
+            { q: "Se 4/4 é igual a 1 inteiro, o que é 8/4?", options: ["1 inteiro", "2 inteiros", "4 inteiros", "8 inteiros"], answer: 1, exp: "Cada grupo de 4 quartos forma 1 inteiro. Como você tem 8 quartos, você tem 2 inteiros completos (8 ÷ 4 = 2)." }
+        ],
+        generators: [
+            function() { // Gerador de Adição de Frações
+                let den = Math.floor(Math.random() * 8) + 3; 
+                let n1 = Math.floor(Math.random() * 5) + 1;
+                let n2 = Math.floor(Math.random() * 5) + 1;
+                let soma = n1 + n2;
+                let ans = `${soma}/${den}`;
+                let err1 = `${soma}/${den * 2}`; 
+                let err2 = `${Math.abs(n1 - n2) || 1}/${den}`; 
+                let err3 = `${soma + 1}/${den}`;
+                let opcoes = [ans, err1, err2, err3].sort(() => Math.random() - 0.5);
+                return {
+                    q: `Qual é o resultado da adição ${n1}/${den} + ${n2}/${den}?`,
+                    options: opcoes, answer: opcoes.indexOf(ans),
+                    exp: `Mantemos o denominador (${den}) e somamos apenas os numeradores (${n1} + ${n2} = ${soma}).`
+                };
+            }
         ]
     },
     medidas: {
         title: "Combinações e Medidas",
         questions: [
-            // Nível Fácil: Unidades básicas e ideias
             { q: "Quantos centímetros (cm) formam 1 metro (m)?", options: ["10 cm", "100 cm", "1000 cm", "1 cm"], answer: 1, exp: "O prefixo 'centi' significa centésima parte. Logo, 1 metro possui exatamente 100 centímetros." },
-            { q: "Para medir a distância entre duas cidades, qual unidade usamos?", options: ["Centímetro (cm)", "Metro (m)", "Quilômetro (km)", "Milímetro (mm)"], answer: 2, exp: "Usamos o Quilômetro (km) para medir grandes distâncias, como estradas e viagens entre cidades." },
+            { q: "Para medir a distância entre duas cidades, qual unidade usamos?", options: ["Centímetro (cm)", "Metro (m)", "Quilômetro (km)", "Milímetro (mm)"], answer: 2, exp: "Usamos o Quilômetro (km) para medir grandes distâncias." },
             { q: "Quantos gramas (g) tem 1 quilograma (kg)?", options: ["10 g", "100 g", "1000 g", "10000 g"], answer: 2, exp: "O prefixo 'quilo' significa mil. Portanto, 1 quilograma equivale a 1000 gramas." },
-            { q: "Para medir a quantidade de água em uma piscina, qual unidade faz sentido?", options: ["Miligrama (mg)", "Quilograma (kg)", "Metro (m)", "Litro (L)"], answer: 3, exp: "O Litro (L) é a unidade usada para medir capacidade, ou seja, líquidos como água, suco e leite." },
-            // Nível Médio: Conversões e Cálculos
+            { q: "Para medir a quantidade de água em uma piscina, qual unidade faz sentido?", options: ["Miligrama (mg)", "Quilograma (kg)", "Metro (m)", "Litro (L)"], answer: 3, exp: "O Litro (L) é a unidade usada para medir capacidade, líquidos." },
             { q: "Se eu tenho 2 calças e 4 camisas, quantas combinações diferentes posso vestir?", options: ["6", "8", "12", "2"], answer: 1, exp: "Para achar as combinações, multiplicamos as opções: 2 calças × 4 camisas = 8 combinações." },
             { q: "Uma régua comum de escola costuma ter 30 cm. Quantos milímetros (mm) isso representa?", options: ["3 mm", "30 mm", "300 mm", "3000 mm"], answer: 2, exp: "Cada 1 centímetro tem 10 milímetros. Então, 30 × 10 = 300 milímetros." },
             { q: "Um pacote de arroz pesa 5 kg. Quantos gramas ele tem?", options: ["50 g", "500 g", "5000 g", "50000 g"], answer: 2, exp: "Como 1 kg tem 1000 g, multiplicamos 5 por 1000, o que dá 5000 gramas." },
             { q: "Quantos mililitros (ml) formam 1 litro (L)?", options: ["10 ml", "100 ml", "1000 ml", "10000 ml"], answer: 2, exp: "O prefixo 'mili' significa milésima parte. Logo, 1 Litro tem 1000 mililitros." },
             { q: "O Gael bebeu 2 copinhos de suco de 250 ml cada. Quanto ele bebeu no total?", options: ["250 ml", "500 ml", "1 Litro", "750 ml"], answer: 1, exp: "Somamos a capacidade dos dois copinhos: 250 ml + 250 ml = 500 ml (meio litro)." },
             { q: "Para comprar um carro, há 3 opções de cores e 3 modelos diferentes. Quantas combinações existem?", options: ["6", "9", "3", "12"], answer: 1, exp: "Multiplicamos as opções de cores pelos modelos: 3 × 3 = 9 combinações diferentes." },
-            // Nível Difícil: Misturas e Problemas Complexos
-            { q: "O que é mais longo: 2 metros ou 250 centímetros?", options: ["2 metros", "250 centímetros", "São iguais", "Depende"], answer: 1, exp: "Sabemos que 2 metros equivalem a 200 centímetros. Como 250 cm é maior que 200 cm, 250 centímetros é mais longo." },
+            { q: "O que é mais longo: 2 metros ou 250 centímetros?", options: ["2 metros", "250 centímetros", "São iguais", "Depende"], answer: 1, exp: "2 metros equivalem a 200 centímetros. Como 250 cm é maior que 200 cm, 250 centímetros é mais longo." },
             { q: "O Antonio tem uma corda de 1 metro e 20 centímetros. Quantos centímetros ela tem ao todo?", options: ["12 cm", "120 cm", "1020 cm", "10020 cm"], answer: 1, exp: "1 metro é igual a 100 centímetros. Somando 100 cm com os 20 cm restantes, temos 120 centímetros." },
-            { q: "Se eu juntar duas barras de chocolate que pesam 500 gramas cada, qual será o peso total?", options: ["1 kg", "500 g", "100 g", "2 kg"], answer: 0, exp: "Somando 500g + 500g obtemos 1000 gramas. E sabemos que 1000 gramas formam exatamente 1 Quilograma (1 kg)." },
+            { q: "Se eu juntar duas barras de chocolate que pesam 500 gramas cada, qual será o peso total?", options: ["1 kg", "500 g", "100 g", "2 kg"], answer: 0, exp: "500g + 500g = 1000 gramas. E sabemos que 1000 gramas formam exatamente 1 Quilograma (1 kg)." },
             { q: "Uma garrafa tem 2 Litros de refrigerante. Quantos copos de 200 ml conseguimos encher?", options: ["5", "10", "15", "20"], answer: 1, exp: "2 Litros equivalem a 2000 ml. Dividindo 2000 ml por 200 ml, conseguimos encher 10 copos." },
-            { q: "Se você tem 4 pães diferentes, 3 tipos de queijo e 2 tipos de presunto, quantos sanduíches únicos pode montar escolhendo um de cada?", options: ["9", "12", "24", "48"], answer: 2, exp: "Multiplicamos todas as opções de combinação juntas: 4 pães × 3 queijos × 2 presuntos = 24 combinações." },
-            { q: "O que é mais pesado: 1 kg de algodão ou 1000 g de chumbo?", options: ["Algodão", "Chumbo", "Têm o mesmo peso", "Impossível saber"], answer: 2, exp: "Pegadinha clássica! 1 kg é exatamente igual a 1000 g, independentemente do material. Eles têm o mesmo peso." },
-            { q: "Se um remédio recomenda tomar 5 mg, e o comprimido tem 1 grama (g), isso significa que:", options: ["O comprimido tem menos que a dose", "O comprimido tem exatamente a dose", "O comprimido tem muito mais que a dose (1000 mg)", "Faltam dados"], answer: 2, exp: "1 grama equivale a 1000 miligramas (mg). Então um comprimido de 1g é 200 vezes maior que a dose recomendada de 5mg." },
-            { q: "Uma pista de corrida tem 3 km de extensão. Se um piloto der 4 voltas, quantos metros ele percorreu?", options: ["12 m", "120 m", "1200 m", "12000 m"], answer: 3, exp: "Primeiro, 3 km = 3000 metros. Se ele der 4 voltas, fazemos 3000 × 4 = 12000 metros." },
-            { q: "Quantas opções de lanches rápidos posso montar se há 5 sabores de salgado e eu posso escolher com ou sem ketchup?", options: ["5", "7", "10", "15"], answer: 2, exp: "'Com ou sem ketchup' são 2 opções. Multiplicando 5 sabores por 2 opções de molho: 5 × 2 = 10 combinações." },
-            { q: "Se uma receita pede 1,5 kg de farinha, quantos gramas você deve usar?", options: ["15 g", "150 g", "1500 g", "15000 g"], answer: 2, exp: "1 kg tem 1000 g e o 0,5 kg (meio quilo) tem 500 g. Somando os dois, temos 1500 gramas." }
+            { q: "Se você tem 4 pães diferentes, 3 tipos de queijo e 2 tipos de presunto, quantos sanduíches únicos pode montar escolhendo um de cada?", options: ["9", "12", "24", "48"], answer: 2, exp: "Multiplicamos todas as opções juntas: 4 pães × 3 queijos × 2 presuntos = 24 combinações." },
+            { q: "O que é mais pesado: 1 kg de algodão ou 1000 g de chumbo?", options: ["Algodão", "Chumbo", "Têm o mesmo peso", "Impossível saber"], answer: 2, exp: "1 kg é exatamente igual a 1000 g, independentemente do material." },
+            { q: "Se um remédio recomenda tomar 5 mg, e o comprimido tem 1 grama (g), isso significa que:", options: ["O comprimido tem menos que a dose", "O comprimido tem exatamente a dose", "O comprimido tem muito mais (1000 mg)", "Faltam dados"], answer: 2, exp: "1 grama equivale a 1000 miligramas (mg). Então um comprimido de 1g é 200 vezes maior que a dose de 5mg." },
+            { q: "Uma pista de corrida tem 3 km de extensão. Se um piloto der 4 voltas, quantos metros ele percorreu?", options: ["12 m", "120 m", "1200 m", "12000 m"], answer: 3, exp: "Primeiro, 3 km = 3000 metros. Fazemos 3000 × 4 = 12000 metros." },
+            { q: "Quantas opções de lanches rápidos posso montar se há 5 sabores de salgado e eu posso escolher com ou sem ketchup?", options: ["5", "7", "10", "15"], answer: 2, exp: "'Com ou sem' são 2 opções. 5 sabores × 2 opções = 10 combinações." },
+            { q: "Se uma receita pede 1,5 kg de farinha, quantos gramas você deve usar?", options: ["15 g", "150 g", "1500 g", "15000 g"], answer: 2, exp: "1 kg tem 1000 g e 0,5 kg tem 500 g. Somando, temos 1500 gramas." }
+        ],
+        generators: [
+            function() { // Gerador de conversão KG para G
+                let kg = Math.floor(Math.random() * 9) + 2; 
+                let g = kg * 1000;
+                let ans = `${g} g`;
+                let err1 = `${kg * 100} g`;
+                let err2 = `${kg * 10} g`;
+                let err3 = `${g + 1000} g`;
+                let opcoes = [ans, err1, err2, err3].sort(() => Math.random() - 0.5);
+                return {
+                    q: `Um pacote pesa ${kg} kg. Quantos gramas (g) ele tem?`,
+                    options: opcoes, answer: opcoes.indexOf(ans),
+                    exp: `Cada 1 kg equivale a 1000 g. Portanto, multiplicamos ${kg} por 1000, resultando em ${g} g.`
+                };
+            }
         ]
     },
     multiplos: {
         title: "Múltiplos e Divisores",
         questions: [
-            // Nível Fácil: Tabuada e Conceitos
             { q: "Quais são os 3 primeiros múltiplos de 2 (diferentes de zero)?", options: ["1, 2, 3", "2, 4, 6", "2, 3, 4", "4, 6, 8"], answer: 1, exp: "Os múltiplos de 2 vêm da tabuada do 2. Assim: 2x1=2, 2x2=4 e 2x3=6." },
             { q: "Quais destes números são múltiplos de 10?", options: ["15, 20, 25", "10, 20, 30", "1, 10, 100", "5, 10, 15"], answer: 1, exp: "Múltiplos de 10 sempre terminam em zero: 10, 20, 30, 40, etc." },
             { q: "O número 15 é múltiplo de qual destes números?", options: ["2", "4", "5", "6"], answer: 2, exp: "Na tabuada do 5 temos o 15 (5 × 3 = 15). Portanto, 15 é múltiplo de 5." },
-            { q: "Se você quer dividir 10 balas igualmente, não pode sobrar nenhuma. Qual número é divisor de 10?", options: ["3", "4", "5", "6"], answer: 2, exp: "O número 5 divide o 10 perfeitamente (10 ÷ 5 = 2). Os divisores de 10 são 1, 2, 5 e 10." },
-            // Nível Médio: Identificando Múltiplos e Divisores
-            { q: "Quais são TODOS os divisores de 8?", options: ["1, 2, 4, 8", "2, 4, 8", "1, 8", "2, 4"], answer: 0, exp: "O 8 pode ser dividido perfeitamente por 1 (dá 8), por 2 (dá 4), por 4 (dá 2) e por 8 (dá 1)." },
+            { q: "Se você quer dividir 10 balas igualmente, não pode sobrar nenhuma. Qual número é divisor de 10?", options: ["3", "4", "5", "6"], answer: 2, exp: "O número 5 divide o 10 perfeitamente (10 ÷ 5 = 2)." },
+            { q: "Quais são TODOS os divisores de 8?", options: ["1, 2, 4, 8", "2, 4, 8", "1, 8", "2, 4"], answer: 0, exp: "O 8 pode ser dividido perfeitamente por 1, por 2, por 4 e por 8." },
             { q: "O número 24 é múltiplo de 6?", options: ["Sim, porque 6 x 4 = 24", "Não, é múltiplo de 5", "Sim, porque 6 x 3 = 24", "Não, o 24 só é múltiplo de 2"], answer: 0, exp: "Como a multiplicação de 6 por 4 resulta perfeitamente em 24, dizemos que 24 é múltiplo de 6." },
-            { q: "Qual destes números é um divisor de 20?", options: ["3", "6", "8", "4"], answer: 3, exp: "20 não divide perfeitamente por 3, 6 ou 8. Mas divide por 4 (20 ÷ 4 = 5)." },
-            { q: "Encontre um múltiplo comum aos números 2 e 3.", options: ["4", "5", "6", "8"], answer: 2, exp: "Os múltiplos de 2 são 2, 4, 6, 8... Os múltiplos de 3 são 3, 6, 9... O 6 aparece nas duas listas, então é um múltiplo comum." },
+            { q: "Qual destes números é um divisor de 20?", options: ["3", "6", "8", "4"], answer: 3, exp: "20 divide por 4 (20 ÷ 4 = 5)." },
+            { q: "Encontre um múltiplo comum aos números 2 e 3.", options: ["4", "5", "6", "8"], answer: 2, exp: "Múltiplos de 2: 2, 4, 6... Múltiplos de 3: 3, 6, 9... O 6 aparece nas duas listas." },
             { q: "Quais são os 4 primeiros múltiplos de 5 (diferentes de zero)?", options: ["5, 10, 15, 20", "1, 5, 10, 15", "10, 20, 30, 40", "5, 6, 7, 8"], answer: 0, exp: "Basta seguir a tabuada do 5: 5x1=5, 5x2=10, 5x3=15 e 5x4=20." },
-            { q: "Qual é o maior divisor do número 12 (sem contar ele mesmo)?", options: ["2", "4", "6", "8"], answer: 2, exp: "Os divisores de 12 são: 1, 2, 3, 4, 6 e 12. Tirando o próprio 12, o maior é o 6." },
-            // Nível Difícil: Comuns e Problemas Lógicos
-            { q: "Qual é o menor múltiplo comum (MMC) entre 4 e 6 (diferente de zero)?", options: ["10", "12", "24", "2"], answer: 1, exp: "Múltiplos de 4: 4, 8, 12, 16... Múltiplos de 6: 6, 12, 18... O menor número que aparece em ambas as tabuadas é o 12." },
-            { q: "Qual é o maior divisor comum (MDC) entre 10 e 15?", options: ["1", "3", "5", "10"], answer: 2, exp: "Divisores de 10: 1, 2, 5, 10. Divisores de 15: 1, 3, 5, 15. O maior número que divide os dois ao mesmo tempo é o 5." },
+            { q: "Qual é o maior divisor do número 12 (sem contar ele mesmo)?", options: ["2", "4", "6", "8"], answer: 2, exp: "Os divisores de 12 são: 1, 2, 3, 4, 6 e 12. Tirando o 12, o maior é o 6." },
+            { q: "Qual é o menor múltiplo comum (MMC) entre 4 e 6 (diferente de zero)?", options: ["10", "12", "24", "2"], answer: 1, exp: "Múltiplos de 4: 4, 8, 12... Múltiplos de 6: 6, 12... O menor que aparece em ambas é o 12." },
+            { q: "Qual é o maior divisor comum (MDC) entre 10 e 15?", options: ["1", "3", "5", "10"], answer: 2, exp: "Divisores de 10: 1, 2, 5, 10. Divisores de 15: 1, 3, 5, 15. O maior em comum é o 5." },
             { q: "O número 7 tem apenas dois divisores. Quais são eles?", options: ["1 e 7", "2 e 7", "3 e 4", "Não tem divisores"], answer: 0, exp: "Números que só podem ser divididos por 1 e por eles mesmos (como o 7) são chamados de números primos." },
-            { q: "Se eu tenho 24 figurinhas e quero dividi-las em pacotes iguais sem sobrar nenhuma, qual tamanho de pacote NÃO é possível?", options: ["Pacotes de 4", "Pacotes de 6", "Pacotes de 5", "Pacotes de 8"], answer: 2, exp: "24 não é divisível por 5 (sobrariam figurinhas). 24 divide perfeitamente por 4 (dá 6), por 6 (dá 4) e por 8 (dá 3)." },
-            { q: "Qual destes números é, ao mesmo tempo, múltiplo de 3 e de 5?", options: ["10", "12", "15", "20"], answer: 2, exp: "Para ser múltiplo de 3 e de 5, tem que estar nas duas tabuadas. O 15 é 3x5, logo serve para as duas." },
-            { q: "Verdadeiro ou Falso: Todo número par é múltiplo de 2.", options: ["Falso, só até o 10", "Verdadeiro", "Falso, alguns são ímpares", "Depende do número"], answer: 1, exp: "Sim! Por definição matemática, todos os números pares são múltiplos de 2, pois podem ser divididos por 2 sem deixar resto." },
-            { q: "Qual é o único número par que tem APENAS dois divisores (é primo)?", options: ["4", "6", "8", "2"], answer: 3, exp: "O número 2 só pode ser dividido por 1 e por ele mesmo (2). Todos os outros números pares podem ser divididos por 2 também." },
-            { q: "Qual é um divisor comum entre 20 e 30?", options: ["4", "10", "15", "6"], answer: 1, exp: "Tanto 20 quanto 30 terminam em zero, o que significa que ambos podem ser divididos perfeitamente por 10." },
+            { q: "Se eu tenho 24 figurinhas e quero dividi-las em pacotes iguais sem sobrar nenhuma, qual tamanho de pacote NÃO é possível?", options: ["Pacotes de 4", "Pacotes de 6", "Pacotes de 5", "Pacotes de 8"], answer: 2, exp: "24 não é divisível por 5 (sobrariam figurinhas)." },
+            { q: "Qual destes números é, ao mesmo tempo, múltiplo de 3 e de 5?", options: ["10", "12", "15", "20"], answer: 2, exp: "O 15 é 3x5, logo está nas duas tabuadas." },
+            { q: "Verdadeiro ou Falso: Todo número par é múltiplo de 2.", options: ["Falso, só até o 10", "Verdadeiro", "Falso, alguns são ímpares", "Depende do número"], answer: 1, exp: "Sim! Todos os números pares podem ser divididos por 2 sem deixar resto." },
+            { q: "Qual é o único número par que tem APENAS dois divisores (é primo)?", options: ["4", "6", "8", "2"], answer: 3, exp: "O número 2 só pode ser dividido por 1 e por ele mesmo (2)." },
+            { q: "Qual é um divisor comum entre 20 e 30?", options: ["4", "10", "15", "6"], answer: 1, exp: "Tanto 20 quanto 30 terminam em zero, logo podem ser divididos perfeitamente por 10." },
             { q: "Quantos divisores no total tem o número 9?", options: ["2 (1, 9)", "3 (1, 3, 9)", "4 (1, 3, 6, 9)", "Apenas o 3"], answer: 1, exp: "O número 9 pode ser dividido por 1, por 3 e por 9. Portanto, possui exatamente 3 divisores." },
-            { q: "Se de 4 em 4 dias chove, e hoje choveu (dia 0). Em qual destes dias vai chover novamente?", options: ["Dia 10", "Dia 12", "Dia 14", "Dia 15"], answer: 1, exp: "Os dias de chuva são múltiplos de 4 (4, 8, 12, 16...). O 12 faz parte dessa lista (4 × 3)." }
+            { q: "Se de 4 em 4 dias chove, e hoje choveu (dia 0). Em qual destes dias vai chover novamente?", options: ["Dia 10", "Dia 12", "Dia 14", "Dia 15"], answer: 1, exp: "Os dias de chuva são múltiplos de 4 (4, 8, 12, 16...). O 12 faz parte dessa lista." }
+        ],
+        generators: [
+            function() { // Gerador de Múltiplos Aleatórios
+                let base = Math.floor(Math.random() * 7) + 3; 
+                let mult = Math.floor(Math.random() * 8) + 2; 
+                let ans = base * mult;
+                let err1 = ans + base;
+                let err2 = ans - base || base;
+                let err3 = ans + 1;
+                let opcoes = [ans.toString(), err1.toString(), err2.toString(), err3.toString()].sort(() => Math.random() - 0.5);
+                return {
+                    q: `Qual destas opções é um múltiplo de ${base}?`,
+                    options: opcoes, answer: opcoes.indexOf(ans.toString()),
+                    exp: `O número ${ans} está na tabuada do ${base}, pois ${base} x ${mult} = ${ans}.`
+                };
+            }
         ]
     }
 };
 
-        // 2. SISTEMA DE METAS E RECOMPENSAS
-        const goals = [
-            { id: "first_blood", req: 1, name: "🌟 Primeiro Acerto!" },
-            { id: "math_apprentice", req: 10, name: "📚 Aprendiz de Matemática (10 acertos)" },
-            { id: "math_ninja", req: 50, name: "🥷 Ninja dos Números (50 acertos)" },
-            { id: "math_master", req: 100, name: "👑 Mestre Calculista (100 acertos)" } // Você pode amarrar isso a um prêmio no mundo real
-        ];
+// 2. SISTEMA DE METAS E RECOMPENSAS
+const goals = [
+    { id: "first_blood", req: 1, name: "🌟 Primeiro Acerto!" },
+    { id: "math_apprentice", req: 10, name: "📚 Aprendiz de Matemática (10 acertos)" },
+    { id: "math_ninja", req: 50, name: "🥷 Ninja dos Números (50 acertos)" },
+    { id: "math_master", req: 100, name: "👑 Mestre Calculista (100 acertos)" } 
+];
 
-        // 3. LÓGICA DE ESTADO E STORAGE
-        let progress = JSON.parse(localStorage.getItem('mathProgress')) || {};
-        let currentTopic = '';
-        let currentQIndex = 0;
-        let pool = [];
-        let hasAnswered = false;
+// 3. LÓGICA DE ESTADO E STORAGE
+let progress = JSON.parse(localStorage.getItem('mathProgress')) || {};
+let currentTopic = '';
+let currentQuestionObj = null; // Guarda a pergunta gerada ou sorteada
+let questionsAnswered = 0;
+const QUESTIONS_PER_ROUND = 10; // O Antonio responde 10 perguntas antes de voltar ao menu
+let hasAnswered = false;
 
-        function initApp() {
-            const container = document.getElementById('topics-container');
-            container.innerHTML = '';
-            let totalCorrect = 0;
+function initApp() {
+    const container = document.getElementById('topics-container');
+    container.innerHTML = '';
+    let totalCorrect = 0;
 
-            for (const key in db) {
-                if (!progress[key]) progress[key] = { correct: 0, wrong: 0 };
-                totalCorrect += progress[key].correct;
-                
-                const btn = document.createElement('button');
-                btn.className = 'topic-btn';
-                btn.innerHTML = `${db[key].title} <span class="stats">✅ ${progress[key].correct} | ❌ ${progress[key].wrong}</span>`;
-                btn.onclick = () => startTopic(key);
-                container.appendChild(btn);
-            }
-            
-            document.getElementById('total-score').innerText = `Acertos Totais: ${totalCorrect}`;
-            renderBadges(totalCorrect);
-        }
+    for (const key in db) {
+        if (!progress[key]) progress[key] = { correct: 0, wrong: 0 };
+        totalCorrect += progress[key].correct;
+        
+        const btn = document.createElement('button');
+        btn.className = 'topic-btn';
+        btn.innerHTML = `${db[key].title} <span class="stats">✅ ${progress[key].correct} | ❌ ${progress[key].wrong}</span>`;
+        btn.onclick = () => startTopic(key);
+        container.appendChild(btn);
+    }
+    
+    document.getElementById('total-score').innerText = `Acertos Totais: ${totalCorrect}`;
+    renderBadges(totalCorrect);
+}
 
-        function renderBadges(totalCorrect) {
-            const container = document.getElementById('badges-container');
-            container.innerHTML = '';
-            goals.forEach(g => {
-                const badge = document.createElement('span');
-                badge.className = `badge ${totalCorrect >= g.req ? 'unlocked' : ''}`;
-                badge.innerText = g.name;
-                container.appendChild(badge);
-            });
-        }
+function renderBadges(totalCorrect) {
+    const container = document.getElementById('badges-container');
+    container.innerHTML = '';
+    goals.forEach(g => {
+        const badge = document.createElement('span');
+        badge.className = `badge ${totalCorrect >= g.req ? 'unlocked' : ''}`;
+        badge.innerText = g.name;
+        container.appendChild(badge);
+    });
+}
 
-        function saveProgress() {
-            localStorage.setItem('mathProgress', JSON.stringify(progress));
-        }
+function saveProgress() {
+    localStorage.setItem('mathProgress', JSON.stringify(progress));
+}
 
-        // 4. LÓGICA DO QUIZ
-        function startTopic(key) {
-            currentTopic = key;
-            pool = [...db[key].questions].sort(() => Math.random() - 0.5); // Embaralha as questões
-            currentQIndex = 0;
-            document.getElementById('menu-view').classList.remove('active-view');
-            document.getElementById('quiz-view').classList.add('active-view');
-            document.getElementById('quiz-title').innerText = db[key].title;
-            loadQuestion();
-        }
+// 4. LÓGICA DO QUIZ HÍBRIDO
+function getQuestion(topicKey) {
+    const topic = db[topicKey];
+    // 50% de chance de usar o gerador dinâmico (se existir) OU 50% de puxar do banco estático
+    const useDynamic = topic.generators && topic.generators.length > 0 && Math.random() > 0.5;
+    
+    if (useDynamic) {
+        // Sorteia um dos geradores dinâmicos do tema e o executa
+        const genIndex = Math.floor(Math.random() * topic.generators.length);
+        return topic.generators[genIndex]();
+    } else {
+        // Sorteia uma questão das 20 fixas que criamos
+        const statIndex = Math.floor(Math.random() * topic.questions.length);
+        return topic.questions[statIndex];
+    }
+}
 
-        function loadQuestion() {
-            hasAnswered = false;
-            const q = pool[currentQIndex];
-            document.getElementById('question-text').innerText = q.q;
-            document.getElementById('explanation').style.display = 'none';
-            document.getElementById('btn-explanation').style.display = 'none';
-            document.getElementById('btn-next').style.display = 'none';
-            
-            const optionsDiv = document.getElementById('options-container');
-            optionsDiv.innerHTML = '';
-            
-            q.options.forEach((opt, index) => {
-                const btn = document.createElement('button');
-                btn.className = 'option-btn';
-                btn.innerText = opt;
-                btn.onclick = () => checkAnswer(index, btn);
-                optionsDiv.appendChild(btn);
-            });
-        }
+function startTopic(key) {
+    currentTopic = key;
+    questionsAnswered = 0;
+    document.getElementById('menu-view').classList.remove('active-view');
+    document.getElementById('quiz-view').classList.add('active-view');
+    document.getElementById('quiz-title').innerText = `${db[key].title} (Rodada de 10)`;
+    loadQuestion();
+}
 
-        function checkAnswer(selectedIndex, btnElement) {
-            if (hasAnswered) return;
-            hasAnswered = true;
-            
-            const q = pool[currentQIndex];
-            const isCorrect = selectedIndex === q.answer;
-            const options = document.getElementById('options-container').children;
+function loadQuestion() {
+    hasAnswered = false;
+    currentQuestionObj = getQuestion(currentTopic); // Pega a questão híbrida
+    
+    document.getElementById('question-text').innerText = currentQuestionObj.q;
+    document.getElementById('explanation').style.display = 'none';
+    document.getElementById('btn-explanation').style.display = 'none';
+    document.getElementById('btn-next').style.display = 'none';
+    
+    const optionsDiv = document.getElementById('options-container');
+    optionsDiv.innerHTML = '';
+    
+    currentQuestionObj.options.forEach((opt, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = opt;
+        btn.onclick = () => checkAnswer(index, btn);
+        optionsDiv.appendChild(btn);
+    });
+}
 
-            if (isCorrect) {
-                btnElement.classList.add('correct');
-                progress[currentTopic].correct++;
-            } else {
-                btnElement.classList.add('wrong');
-                options[q.answer].classList.add('correct'); // Mostra a certa
-                progress[currentTopic].wrong++;
-            }
+function checkAnswer(selectedIndex, btnElement) {
+    if (hasAnswered) return;
+    hasAnswered = true;
+    
+    const isCorrect = selectedIndex === currentQuestionObj.answer;
+    const options = document.getElementById('options-container').children;
 
-            saveProgress();
-            document.getElementById('btn-explanation').style.display = 'block';
-            document.getElementById('btn-next').style.display = 'block';
-        }
+    if (isCorrect) {
+        btnElement.classList.add('correct');
+        progress[currentTopic].correct++;
+    } else {
+        btnElement.classList.add('wrong');
+        options[currentQuestionObj.answer].classList.add('correct'); 
+        progress[currentTopic].wrong++;
+    }
 
-        function showExplanation() {
-            const expDiv = document.getElementById('explanation');
-            expDiv.innerText = pool[currentQIndex].exp;
-            expDiv.style.display = 'block';
-            document.getElementById('btn-explanation').style.display = 'none';
-        }
+    saveProgress();
+    questionsAnswered++;
+    
+    document.getElementById('btn-explanation').style.display = 'block';
+    
+    // Altera o texto do botão de próximo se for a última pergunta da rodada
+    const btnNext = document.getElementById('btn-next');
+    btnNext.innerText = questionsAnswered >= QUESTIONS_PER_ROUND ? "Finalizar Rodada ➔" : "Próxima Questão ➔";
+    btnNext.style.display = 'block';
+}
 
-        function nextQuestion() {
-            currentQIndex++;
-            if (currentQIndex < pool.length) {
-                loadQuestion();
-            } else {
-                alert("Você completou as questões deste tema! Voltando ao menu para ver sua evolução.");
-                showMenu();
-            }
-        }
+function showExplanation() {
+    const expDiv = document.getElementById('explanation');
+    expDiv.innerText = currentQuestionObj.exp;
+    expDiv.style.display = 'block';
+    document.getElementById('btn-explanation').style.display = 'none';
+}
 
-        function showMenu() {
-            document.getElementById('quiz-view').classList.remove('active-view');
-            document.getElementById('menu-view').classList.add('active-view');
-            initApp();
-        }
+function nextQuestion() {
+    if (questionsAnswered < QUESTIONS_PER_ROUND) {
+        loadQuestion();
+    } else {
+        showMenu();
+    }
+}
 
-        // Inicia o app
-        initApp();
+function showMenu() {
+    document.getElementById('quiz-view').classList.remove('active-view');
+    document.getElementById('menu-view').classList.add('active-view');
+    initApp();
+}
+
+initApp();
     </script>
 </body>
 </html>
