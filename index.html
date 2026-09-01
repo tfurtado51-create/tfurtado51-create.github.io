@@ -394,9 +394,49 @@ function getQuestion(topicKey) {
     }
 }
 
+// VARIÁVEL NOVA: Guarda as 10 questões únicas da rodada atual
+let currentRoundDeck = []; 
+
 function startTopic(key) {
     currentTopic = key;
     questionsAnswered = 0;
+    currentRoundDeck = [];
+    
+    // Cria a memória de questões que ele já ACERTOU
+    if (!progress[key].acertadas) progress[key].acertadas = [];
+    
+    // Filtra as questões estáticas tirando aquelas que ele JÁ ACERTOU
+    let allStatic = [...db[key].questions];
+    let unseenStatic = allStatic.filter(q => !progress[key].acertadas.includes(q.q));
+    
+    // Se ele já acertou (quase) todas, zeramos a memória para ele revisar o tema
+    if (unseenStatic.length < 5) {
+        progress[key].acertadas = [];
+        unseenStatic = [...allStatic];
+    }
+    
+    unseenStatic.sort(() => Math.random() - 0.5); // Embaralha
+    
+    let hasGenerators = db[key].generators && db[key].generators.length > 0;
+    
+    // Monta o "Baralho" com 10 questões para esta rodada
+    for (let i = 0; i < QUESTIONS_PER_ROUND; i++) {
+        let useDynamic = hasGenerators && (Math.random() < 0.25); // 25% de chance de ser o gerador infinito
+        
+        if (!useDynamic && unseenStatic.length > 0) {
+            currentRoundDeck.push(unseenStatic.pop());
+        } else if (hasGenerators) {
+            let genIndex = Math.floor(Math.random() * db[key].generators.length);
+            currentRoundDeck.push(db[key].generators[genIndex]());
+        } else {
+            if (unseenStatic.length === 0) {
+                unseenStatic = [...allStatic].sort(() => Math.random() - 0.5);
+                progress[key].acertadas = []; // Zera se acabar no meio da montagem
+            }
+            currentRoundDeck.push(unseenStatic.pop());
+        }
+    }
+    
     document.getElementById('menu-view').classList.remove('active-view');
     document.getElementById('quiz-view').classList.add('active-view');
     document.getElementById('quiz-title').innerText = `${db[key].title} (Rodada de 10)`;
@@ -405,11 +445,10 @@ function startTopic(key) {
 
 function loadQuestion() {
     hasAnswered = false;
-    currentQuestionObj = getQuestion(currentTopic); 
+    currentQuestionObj = currentRoundDeck[questionsAnswered]; 
     
     document.getElementById('question-text').innerText = currentQuestionObj.q;
     
-    // NOVO: Renderiza o visual se a questão tiver, senão deixa oculto
     const visualDiv = document.getElementById('visual-container');
     visualDiv.innerHTML = currentQuestionObj.visual ? currentQuestionObj.visual : '';
     visualDiv.style.display = currentQuestionObj.visual ? 'flex' : 'none';
@@ -440,10 +479,18 @@ function checkAnswer(selectedIndex, btnElement) {
     if (isCorrect) {
         btnElement.classList.add('correct');
         progress[currentTopic].correct++;
+        
+        // NOVO: Se ele acertou, guardamos a pergunta na memória para não repetir tão cedo
+        if (!progress[currentTopic].acertadas) progress[currentTopic].acertadas = [];
+        if (!progress[currentTopic].acertadas.includes(currentQuestionObj.q)) {
+            progress[currentTopic].acertadas.push(currentQuestionObj.q);
+        }
+        
     } else {
         btnElement.classList.add('wrong');
         options[currentQuestionObj.answer].classList.add('correct'); 
         progress[currentTopic].wrong++;
+        // Como ele errou, NÃO salvamos em 'acertadas'. Ela vai voltar nas próximas rodadas!
     }
 
     saveProgress();
@@ -451,7 +498,6 @@ function checkAnswer(selectedIndex, btnElement) {
     
     document.getElementById('btn-explanation').style.display = 'block';
     
-    // Altera o texto do botão de próximo se for a última pergunta da rodada
     const btnNext = document.getElementById('btn-next');
     btnNext.innerText = questionsAnswered >= QUESTIONS_PER_ROUND ? "Finalizar Rodada ➔" : "Próxima Questão ➔";
     btnNext.style.display = 'block';
