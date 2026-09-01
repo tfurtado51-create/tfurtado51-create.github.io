@@ -69,7 +69,12 @@
     <!-- TELA DE QUIZ (FLASHCARD) -->
     <div id="quiz-view">
         <h2 id="quiz-title" style="margin-bottom: 15px; color: #555;">Tema</h2>
-        <div class="card" id="question-text">Pergunta vai aqui?</div>
+        <div class="card" style="flex-direction: column;">
+            <!-- NOVO: Container para imagens/gráficos -->
+            <div id="visual-container" style="width: 100%; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; min-height: 50px;"></div>
+            
+            <div id="question-text">Pergunta vai aqui?</div>
+        </div>
         
         <div class="options" id="options-container"></div>
         
@@ -289,9 +294,15 @@ function startTopic(key) {
 
 function loadQuestion() {
     hasAnswered = false;
-    currentQuestionObj = getQuestion(currentTopic); // Pega a questão híbrida
+    currentQuestionObj = getQuestion(currentTopic); 
     
     document.getElementById('question-text').innerText = currentQuestionObj.q;
+    
+    // NOVO: Renderiza o visual se a questão tiver, senão deixa oculto
+    const visualDiv = document.getElementById('visual-container');
+    visualDiv.innerHTML = currentQuestionObj.visual ? currentQuestionObj.visual : '';
+    visualDiv.style.display = currentQuestionObj.visual ? 'flex' : 'none';
+    
     document.getElementById('explanation').style.display = 'none';
     document.getElementById('btn-explanation').style.display = 'none';
     document.getElementById('btn-next').style.display = 'none';
