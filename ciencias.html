@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Explorador de Ciências</title>
+    <style>
+        :root {
+            --primary: #27ae60; /* Verde para Ciências */
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --bg: #f4fcf7;
+            --card: #ffffff;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg); color: #333; padding: 20px; text-align: center; }
+        header { margin-bottom: 20px; }
+        h1 { color: var(--primary); font-size: 24px; margin-bottom: 5px; }
+        
+        #menu-view, #quiz-view, #reward-view { display: none; }
+        .active-view { display: block !important; }
+
+        .topic-btn {
+            background: var(--card); border: 2px solid var(--primary); color: var(--primary);
+            padding: 15px; margin: 10px 0; border-radius: 10px; width: 100%;
+            font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .topic-btn:active { transform: scale(0.98); }
+        .stats { font-size: 14px; color: #666; font-weight: normal; }
+        
+        .rewards-container { margin-top: 30px; background: var(--card); padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .badge { display: inline-block; padding: 8px 12px; margin: 5px; border-radius: 20px; background: #e0e0e0; color: #888; font-size: 14px; font-weight: bold; }
+        .badge.unlocked { background: #f39c12; color: #fff; box-shadow: 0 2px 4px rgba(243, 156, 18, 0.4); }
+
+        .card { background: var(--card); padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; min-height: 200px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-direction: column; }
+        .options { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .option-btn { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 10px; font-size: 18px; cursor: pointer; }
+        .option-btn:active { opacity: 0.8; }
+        .option-btn.correct { background: var(--success); }
+        .option-btn.wrong { background: var(--danger); }
+        
+        .control-btn { margin-top: 20px; background: #555; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-size: 16px; width: 100%; cursor: pointer; display: block; text-decoration: none; box-sizing: border-box;}
+        #explanation { margin-top: 15px; padding: 15px; background: #e9ecef; border-radius: 8px; font-size: 16px; display: none; text-align: left; border-left: 4px solid var(--primary); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🔬 Ciências com Antonio</h1>
+        <p id="total-score">Descobertas Totais: 0</p>
+    </header>
+
+    <div id="menu-view" class="active-view">
+        <div id="topics-container"></div>
+        
+        <div class="rewards-container">
+            <h3>🏆 Galeria de Cientista</h3>
+            <div id="badges-container"></div>
+        </div>
+        
+        <button onclick="if(confirm('Tem certeza que deseja zerar o progresso?')) { localStorage.removeItem('cienciaProgress'); location.reload(); }" style="margin-top: 30px; background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px;">🔄 Zerar Progresso</button>
+    </div>
+
+    <div id="quiz-view">
+        <h2 id="quiz-title" style="margin-bottom: 15px; color: #555;">Tema</h2>
+        <div class="card">
+            <div id="visual-container" style="width: 100%; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; min-height: 50px;"></div>
+            <div id="question-text">Pergunta vai aqui?</div>
+        </div>
+        
+        <div class="options" id="options-container"></div>
+        
+        <div id="explanation"></div>
+        
+        <!-- NOVO: Botão de Vídeo -->
+        <a id="btn-video" href="#" target="_blank" class="control-btn" style="display:none; background: #e74c3c;">▶️ Assistir Vídeo Explicativo</a>
+        
+        <button class="control-btn" id="btn-explanation" onclick="showExplanation()" style="display:none; background: #f39c12;">💡 Ler Explicação</button>
+        <button class="control-btn" id="btn-next" onclick="nextQuestion()" style="display:none; background: var(--success);">Próxima Questão ➔</button>
+        <button class="control-btn" onclick="showMenu()" style="background: #95a5a6; margin-top: 10px;">Voltar ao Menu</button>
+    </div>
+
+    <script>
+const db = {
+    astronomia: {
+        title: "🌌 Astronomia e Espaço",
+        questions: [
+            // Fases da Lua e Eclipses
+            { 
+                q: "Por que vemos diferentes fases da Lua no céu durante o mês?", 
+                visual: `<div style="font-size: 50px;">🌑 🌓 🌕 🌗</div>`,
+                options: ["Porque as nuvens a cobrem", "Por causa da sombra da Terra", "Pela posição dela em relação à Terra e ao Sol", "Porque ela acende e apaga"], 
+                answer: 2, 
+                exp: "A Lua não tem luz própria. Conforme ela gira ao redor da Terra, vemos diferentes partes dela sendo iluminadas pelo Sol.",
+                video: "https://www.youtube.com/results?search_query=fases+da+lua+manual+do+mundo"
+            },
+            {
+                q: "Qual é a fase da Lua quando não conseguimos vê-la no céu noturno?",
+                options: ["Lua Cheia", "Lua Minguante", "Lua Crescente", "Lua Nova"],
+                answer: 3,
+                exp: "Na fase Nova, a face da Lua que está voltada para a Terra não está recebendo a luz do Sol, por isso ela fica 'escondida' no escuro."
+            },
+            { 
+                q: "O que acontece durante um Eclipse Solar?", 
+                visual: `<div style="font-size: 50px;">☀️ 🌑 🌍</div>`,
+                options: ["A Terra fica entre o Sol e a Lua", "A Lua passa exatamente entre o Sol e a Terra", "O Sol se apaga por alguns minutos", "Os planetas se alinham"], 
+                answer: 1, 
+                exp: "No eclipse solar, a Lua entra na frente do Sol e projeta uma sombra aqui na Terra, bloqueando a luz do dia.",
+                video: "https://www.youtube.com/results?search_query=eclipse+solar+explicacao+infantil"
+            },
+            {
+                q: "Qual é a diferença entre um Eclipse Solar e um Eclipse Lunar?",
+                options: ["No Lunar, o Sol fica na frente da Terra.", "No Lunar, a Terra projeta sua sombra na Lua.", "O Solar só acontece à noite.", "Não existe diferença."],
+                answer: 1,
+                exp: "No Eclipse Lunar, a Terra fica exatamente entre o Sol e a Lua. A sombra do nosso planeta cobre a Lua, deixando-a escura (e às vezes avermelhada)."
+            },
+            // Sistema Solar e Tamanhos
+            { 
+                q: "Se o Sol fosse do tamanho de uma bola de futebol, qual seria o tamanho aproximado da Terra em comparação?", 
+                options: ["Uma bola de tênis", "Uma bola de gude", "Um grão de pimenta", "Uma bola de basquete"], 
+                answer: 2, 
+                exp: "O Sol é gigantesco! Se ele fosse uma bola de futebol no centro do campo, a Terra seria menor que um grãozinho de pimenta flutuando longe dali." 
+            },
+            {
+                q: "Qual é o maior planeta do nosso Sistema Solar?",
+                options: ["Terra", "Saturno", "Júpiter", "Marte"],
+                answer: 2,
+                exp: "Júpiter é um gigante gasoso e o maior planeta do nosso sistema. Ele é tão grande que caberiam mais de mil Terras dentro dele!",
+                video: "https://www.youtube.com/results?search_query=tamanho+dos+planetas+sistema+solar"
+            },
+            {
+                q: "Qual planeta é conhecido como o 'Planeta Vermelho' por causa do ferro em seu solo?",
+                options: ["Vênus", "Marte", "Mercúrio", "Urano"],
+                answer: 1,
+                exp: "Marte tem um solo rico em óxido de ferro (uma espécie de ferrugem), o que dá a ele essa cor avermelhada característica."
+            },
+            {
+                q: "Qual é o planeta mais quente do Sistema Solar, mesmo não sendo o mais próximo do Sol?",
+                options: ["Mercúrio", "Vênus", "Terra", "Netuno"],
+                answer: 1,
+                exp: "Vênus tem uma atmosfera muito grossa cheia de gases que causam um efeito estufa extremo, prendendo o calor e o tornando o mais quente de todos."
+            },
+            {
+                q: "O que o nosso Sol é de verdade?",
+                options: ["Um planeta gigante de fogo", "Uma estrela", "Um buraco negro", "Um cometa parado"],
+                answer: 1,
+                exp: "O Sol é uma estrela, assim como aquelas que vemos à noite, mas está muito mais perto de nós, por isso ilumina e aquece nosso planeta."
+            },
+            {
+                q: "O Sistema Solar fica dentro de qual galáxia?",
+                options: ["Andrômeda", "Sombrero", "Via Láctea", "Órion"],
+                answer: 2,
+                exp: "Vivemos na Via Láctea, uma galáxia em formato espiral que contém bilhões de outras estrelas e planetas."
+            },
+            // Constelações e Exploração
+            {
+                q: "Qual conjunto de estrelas forma figuras no céu que ajudavam os antigos exploradores a se localizarem?",
+                options: ["Galáxias", "Meteoros", "Constelações", "Satélites"],
+                answer: 2,
+                exp: "Constelações são agrupamentos aparentes de estrelas que formam desenhos no céu, criados pela imaginação humana."
+            },
+            {
+                q: "Qual constelação em formato de cruz é muito famosa no Hemisfério Sul e está até na bandeira do Brasil?",
+                options: ["Ursa Maior", "Três Marias", "Cruzeiro do Sul", "Escorpião"],
+                answer: 2,
+                exp: "O Cruzeiro do Sul é formado por estrelas bem brilhantes e sempre foi usado como bússola natural para encontrar o ponto Cardeal Sul."
+            },
+            {
+                q: "O que são as 'Três Marias' que vemos no céu noturno?",
+                options: ["Três planetas alinhados", "Três cometas", "O cinturão da constelação de Órion", "Três galáxias próximas"],
+                answer: 2,
+                exp: "As Três Marias são três estrelas alinhadas que formam o 'cinto' do caçador na famosa constelação de Órion."
+            },
+            {
+                q: "Como chamamos os veículos ou robôs enviados ao espaço sem tripulação para estudar outros planetas?",
+                options: ["Foguetes de passeio", "Sondas espaciais", "Estações espaciais", "Satélites de TV"],
+                answer: 1,
+                exp: "As sondas espaciais (como os rovers que andam em Marte) são robôs enviados para coletar dados, tirar fotos e explorar locais onde humanos ainda não chegaram."
+            },
+            {
+                q: "Qual foi o primeiro corpo celeste (além da Terra) a ser pisado pelo ser humano?",
+                options: ["Marte", "A Lua", "Vênus", "Um asteroide"],
+                answer: 1,
+                exp: "A Lua foi pisada pela primeira vez em 1969, pelos astronautas da missão Apollo 11."
+            }
+          {
+                q: "Como chamamos o movimento que a Terra faz girando em torno dela mesma, como um peão?",
+                visual: `<div style="font-size: 50px;">🌍 🔄</div>`,
+                options: ["Translação", "Rotação", "Gravidade", "Eclipse"],
+                answer: 1,
+                exp: "A rotação é o giro da Terra em torno do seu próprio eixo e leva cerca de 24 horas. É isso que cria o dia e a noite!"
+            },
+            {
+                q: "E o movimento que a Terra faz girando ao redor do Sol?",
+                options: ["Translação", "Rotação", "Erupção", "Meteorito"],
+                answer: 0,
+                exp: "A translação é a viagem completa da Terra ao redor do Sol. Ela demora 365 dias e 6 horas (um ano inteiro) e é responsável pelas estações do ano."
+            },
+            {
+                q: "Qual é o único satélite natural do planeta Terra?",
+                options: ["O Sol", "Uma sonda espacial", "A Lua", "Marte"],
+                answer: 2,
+                exp: "A Lua é o nosso satélite natural, ou seja, um corpo celeste que orbita (gira ao redor) de um planeta."
+            },
+            {
+                q: "O que são as famosas 'estrelas cadentes' que vemos brilhando rápido no céu?",
+                options: ["Estrelas que caíram do céu", "Meteoros queimando na atmosfera", "Cometas parados", "Naves espaciais velozes"],
+                answer: 1,
+                exp: "Estrelas cadentes não são estrelas! São meteoros (pedaços de rocha espacial) que entram na atmosfera da Terra muito rápido e queimam pelo atrito, deixando um rastro de luz."
+            },
+            {
+                q: "Qual é o planeta mais distante do Sol no nosso Sistema Solar, sendo extremamente frio e escuro?",
+                options: ["Saturno", "Urano", "Netuno", "Plutão"],
+                answer: 2,
+                exp: "Netuno é o oitavo e mais distante planeta do Sistema Solar (Plutão foi rebaixado a planeta anão). Ele é feito de gelo e gás."
+            },
+            {
+                q: "Qual planeta é famoso pelos seus anéis gigantes e brilhantes feitos de gelo e rocha?",
+                visual: `<div style="font-size: 50px;">🪐</div>`,
+                options: ["Júpiter", "Saturno", "Marte", "Vênus"],
+                answer: 1,
+                exp: "Saturno é o sexto planeta do Sistema Solar e o segundo maior. Seus anéis são formados por bilhões de pedaços de gelo, poeira e rocha."
+            },
+            {
+                q: "Por que Plutão não é mais considerado um planeta principal do Sistema Solar?",
+                options: ["Porque ele explodiu", "Porque ele é um Planeta Anão", "Porque ele saiu da nossa galáxia", "Porque ele virou uma lua"],
+                answer: 1,
+                exp: "Em 2006, os cientistas criaram novas regras. Como Plutão é muito pequeno e sua órbita é cheia de outros objetos, ele foi rebaixado para a categoria de Planeta Anão."
+            },
+            {
+                q: "Qual é o nome do instrumento óptico que os astrônomos usam para observar estrelas e planetas de perto?",
+                options: ["Microscópio", "Telescópio", "Periscópio", "Estetoscópio"],
+                answer: 1,
+                exp: "O telescópio usa lentes e espelhos para captar a luz e ampliar a imagem de objetos muito distantes no espaço."
+            },
+            {
+                q: "Qual dessas opções NÃO é um planeta do nosso Sistema Solar?",
+                options: ["Urano", "Mercúrio", "Órion", "Terra"],
+                answer: 2,
+                exp: "Órion não é um planeta, é uma Constelação (um grupo de estrelas) famosa por abrigar as 'Três Marias'."
+            },
+            {
+                q: "O que os astronautas usam para respirar e sobreviver no espaço sideral onde não há ar?",
+                options: ["Máscara de mergulho", "Traje espacial pressurizado", "Prendem a respiração", "Protetor solar"],
+                answer: 1,
+                exp: "O traje espacial fornece oxigênio, regula a temperatura e protege o astronauta da radiação do Sol e da falta de pressão no espaço."
+            },
+            {
+                q: "Qual planeta do nosso sistema é o mais próximo do Sol?",
+                options: ["Vênus", "Terra", "Mercúrio", "Marte"],
+                answer: 2,
+                exp: "Mercúrio é o primeiro planeta do Sistema Solar. Apesar de estar colado no Sol, de noite ele é super gelado porque não tem atmosfera para segurar o calor."
+            },
+            {
+                q: "O Telescópio Espacial Hubble e o James Webb não estão na Terra. Onde eles ficam?",
+                options: ["No topo da montanha mais alta", "Flutuando no oceano", "Orbitando no espaço", "Na superfície da Lua"],
+                answer: 2,
+                exp: "Eles são telescópios espaciais! Ficam no espaço para que a atmosfera da Terra (nuvens e ar) não atrapalhe a visão incrível que eles têm do universo."
+            },
+            {
+                q: "O que tem exatamente no centro do nosso Sistema Solar?",
+                options: ["A Terra", "A Lua", "Um buraco negro", "O Sol"],
+                answer: 3,
+                exp: "O Sol fica no centro! A imensa gravidade dele é o que puxa e mantém todos os 8 planetas girando em torno dele."
+            },
+            {
+                q: "Uma Estrela é um corpo celeste que:",
+                options: ["Gira em torno de planetas", "Produz e emite luz e calor próprios", "É feita de rocha sólida", "Só aparece à noite"],
+                answer: 1,
+                exp: "Estrelas, como o nosso Sol, são esferas gigantes de gás muito quente que produzem sua própria luz e calor através de reações nucleares."
+            },
+            {
+                q: "Se Júpiter é o maior planeta do Sistema Solar, qual é o menor?",
+                options: ["Marte", "Terra", "Mercúrio", "Netuno"],
+                answer: 2,
+                exp: "Mercúrio é o menor dos 8 planetas. Ele é apenas um pouco maior que a nossa Lua!"
+            }
+        ]
+    },
+    terra: {
+        title: "🌍 O Planeta Terra",
+        questions: [
+            // Litosfera, Rochas e Minerais
+            { 
+                q: "A camada externa e sólida do nosso planeta, formada por rochas e minerais, é chamada de:", 
+                options: ["Atmosfera", "Litosfera", "Hidrosfera", "Núcleo"], 
+                answer: 1, 
+                exp: "A palavra 'Lito' significa pedra. A Litosfera é a crosta terrestre, o chão onde pisamos, construímos casas e onde ficam as montanhas." 
+            },
+            {
+                q: "O que é o magma?",
+                options: ["Uma rocha congelada", "Água fervente do fundo do mar", "Rocha derretida muito quente que fica abaixo da crosta", "O centro exato da Terra"],
+                answer: 2,
+                exp: "O magma é uma massa de rocha derretida pelo calor extremo. Quando um vulcão entra em erupção, o magma sai para a superfície e passa a se chamar lava."
+            },
+            {
+                q: "Como chamamos as rochas que se formam quando o magma ou a lava esfria e endurece?",
+                options: ["Rochas sedimentares", "Rochas magmáticas (ou ígneas)", "Rochas metamórficas", "Cristais puros"],
+                answer: 1,
+                exp: "O próprio nome já diz: rochas magmáticas nascem do resfriamento do magma. O basalto e o granito são exemplos."
+            },
+            {
+                q: "Rochas formadas pelo acúmulo de areia, restos de conchas e pedrinhas ao longo de milhões de anos são as:",
+                options: ["Magmáticas", "Sedimentares", "Metamórficas", "Vulcânicas"],
+                answer: 1,
+                exp: "Os sedimentos (pedacinhos de natureza) vão se acumulando em camadas, sendo espremidos com o tempo até virarem rochas sedimentares, como o calcário."
+            },
+            {
+                q: "O que são minerais?",
+                options: ["Partes de plantas secas", "Pedaços de ossos de dinossauros", "Substâncias naturais sólidas que formam as rochas", "Bactérias da terra"],
+                answer: 2,
+                exp: "Minerais são como os 'ingredientes' da natureza. O quartzo, o ouro e o sal de cozinha (halita) são minerais. Vários minerais juntos formam uma rocha."
+            },
+            // Formação e Tipos de Solo
+            { 
+                q: "Como o solo (a terra) é formado ao longo de milhares de anos?", 
+                options: ["Apenas por restos de animais mortos", "Pelo desgaste de rochas causados pela chuva, vento e calor (Intemperismo)", "Ele cai do espaço como poeira", "Ele evapora do mar"], 
+                answer: 1, 
+                exp: "O solo é formado pelo intemperismo: a chuva, o vento e as mudanças de temperatura vão quebrando as rochas gigantes em pedacinhos minúsculos ao longo do tempo.",
+                video: "https://www.youtube.com/results?search_query=como+o+solo+se+forma+infantil"
+            },
+            {
+                q: "Qual é a parte orgânica importante do solo, formada por restos de plantas e animais decompostos?",
+                options: ["Argila", "Areia", "Húmus", "Cascalho"],
+                answer: 2,
+                exp: "O Húmus deixa o solo escuro e muito rico em nutrientes, excelente para as plantas crescerem fortes."
+            },
+            { 
+                q: "Qual tipo de solo é muito permeável, ou seja, deixa a água passar muito rápido por ele (não forma poças)?", 
+                options: ["Solo Argiloso", "Solo Humífero", "Solo Arenoso", "Rochoso"], 
+                answer: 2, 
+                exp: "O solo arenoso (como o da praia) tem grãos grandes e soltos, fazendo a água escorrer rapidamente entre eles." 
+            },
+            {
+                q: "Qual tipo de solo retém muita água, ficando encharcado e formando barro fácil?",
+                options: ["Arenoso", "Argiloso", "Rochoso", "Seco"],
+                answer: 1,
+                exp: "O solo argiloso tem partículas muito fininhas que ficam muito juntas, segurando a água. É o solo usado para fazer cerâmica e tijolos."
+            },
+            {
+                q: "O solo ideal para o plantio (agricultura), rico em nutrientes e que retém a quantidade certa de água, é o:",
+                options: ["Solo Arenoso", "Solo Humífero (terra preta)", "Solo Rochoso", "Solo Argiloso"],
+                answer: 1,
+                exp: "O solo humífero tem a mistura ideal de areia, argila e muito húmus (matéria orgânica), sendo o melhor para as raízes das plantas."
+            },
+            {
+                q: "As minhocas são grandes amigas do solo porque elas:",
+                options: ["Comem as raízes ruins das plantas", "Cavam túneis que ajudam a água e o ar a entrarem na terra", "Assustam os pássaros", "Transformam argila em areia"],
+                answer: 1,
+                exp: "Ao rastejar debaixo da terra, as minhocas aram o solo naturalmente, deixando-o fofinho e produzindo adubo com suas fezes."
+            },
+            // Experimentos e Fenômenos
+            {
+                q: "Num experimento de 'Tornado na Garrafa', o que faz a água girar em formato de funil quando sacudimos?",
+                visual: `<div style="font-size: 50px;">🌪️ 🍾</div>`,
+                options: ["A força centrípeta e o ar subindo", "A gravidade zero", "A temperatura da água", "O gás carbônico da água"],
+                answer: 0,
+                exp: "Ao girar a garrafa, criamos um vórtice. A água é empurrada para fora enquanto desce, e o ar sobe pelo meio, criando o funil perfeito!",
+                video: "https://www.youtube.com/results?search_query=tornado+na+garrafa+experimento"
+            },
+            {
+                q: "O que é erosão do solo?",
+                options: ["Quando o solo fica mais rico em nutrientes", "O desgaste e destruição do solo pela ação forte da água e dos ventos", "O plantio de novas árvores", "A transformação de areia em argila"],
+                answer: 1,
+                exp: "A erosão acontece quando chuvas fortes ou ventos levam a camada fértil do solo embora, criando buracos e desgastando a terra, especialmente onde não há árvores."
+            },
+            {
+                q: "Por que as raízes das árvores ajudam a proteger o solo?",
+                options: ["Elas sugam toda a água da chuva antes de bater no chão", "Elas seguram a terra, evitando que ela seja lavada pela chuva (erosão)", "Elas espantam animais que cavam buracos", "Elas esquentam a terra"],
+                answer: 1,
+                exp: "As raízes funcionam como uma grande rede subterrânea que 'abraça' a terra, impedindo que a chuva ou o vento a carreguem embora."
+            },
+            {
+                q: "Como chamamos as rochas que sofrem muita pressão e calor debaixo da terra e se transformam em outro tipo de rocha (como o mármore)?",
+                options: ["Magmáticas", "Sedimentares", "Metamórficas", "Espaciais"],
+                answer: 2,
+                exp: "A palavra 'metamorfose' significa transformação. Rochas metamórficas são aquelas que mudaram totalmente sua estrutura original devido ao calor e pressão no interior da Terra."
+            }
+          ,{
+                q: "Além da Litosfera (rochas), a Terra tem uma camada formada por toda a água do planeta (oceanos, rios e lagos). Como ela se chama?",
+                options: ["Atmosfera", "Hidrosfera", "Biosfera", "Estratosfera"],
+                answer: 1,
+                exp: "A palavra 'Hidro' significa água. A Hidrosfera cobre cerca de 71% da superfície do nosso planeta!"
+            },
+            {
+                q: "Em qual tipo de rocha os paleontólogos costumam encontrar fósseis de dinossauros?",
+                options: ["Rochas Magmáticas", "Rochas Sedimentares", "Rochas Metamórficas", "No Magma"],
+                answer: 1,
+                exp: "Os sedimentos (lama e areia) soterravam os animais mortos suavemente ao longo de milhões de anos, preservando seus ossos nas rochas sedimentares."
+            },
+            {
+                q: "Ouro, prata e diamante são exemplos valiosos de quê?",
+                options: ["Rochas", "Madeira", "Minerais", "Fósseis"],
+                answer: 2,
+                exp: "Eles são minerais naturais, sólidos e com uma estrutura química única. São muito raros e por isso têm grande valor."
+            },
+            {
+                q: "Como chamamos a camada de ar e gases que envolve a Terra e nos permite respirar?",
+                options: ["Hidrosfera", "Atmosfera", "Litosfera", "Núcleo"],
+                answer: 1,
+                exp: "A Atmosfera é a nossa capa invisível. Ela contém o oxigênio e nos protege dos raios perigosos do Sol e dos meteoros."
+            },
+            {
+                q: "O que as raízes das plantas tiram do solo para sobreviverem?",
+                options: ["Apenas água", "Água e sais minerais", "Húmus e oxigênio", "Rochas magmáticas"],
+                answer: 1,
+                exp: "O solo funciona como um 'prato de comida' para as plantas. Elas sugam a água misturada com sais minerais nutritivos."
+            },
+            {
+                q: "Existe um tipo de solo rico em cálcio, formado por pedaços de rochas que se desmancham, muito comum em áreas de cavernas. É o solo:",
+                options: ["Humífero", "Arenoso", "Argiloso", "Calcário"],
+                answer: 3,
+                exp: "O solo calcário tem muita pedra e cálcio. É um solo mais seco, e é nele que geralmente se formam as grandes cavernas subterrâneas."
+            },
+            {
+                q: "O centro absoluto do nosso planeta, que é extremamente quente, se chama:",
+                options: ["Crosta", "Manto", "Núcleo", "Litosfera"],
+                answer: 2,
+                exp: "O Núcleo da Terra é formado principalmente por ferro e níquel. A parte interna dele é tão quente quanto a superfície do Sol!"
+            },
+            {
+                q: "O uso excessivo de máquinas pesadas e gado pisoteando pode estragar o solo, deixando-o duro e sem ar. Como chamamos isso?",
+                options: ["Compactação do solo", "Erosão do solo", "Adubação do solo", "Fotossíntese"],
+                answer: 0,
+                exp: "A compactação esmaga os buraquinhos de ar da terra, dificultando a entrada de água e impedindo as raízes de crescerem."
+            },
+            {
+                q: "Ao observarmos o formato do 'Tornado na garrafa', notamos que a água desce girando. O nome desse giro rápido em espiral é:",
+                options: ["Tsunami", "Terremoto", "Vórtice", "Gravidade"],
+                answer: 2,
+                exp: "O vórtice é um movimento circular em espiral. É o mesmo movimento que vemos na água descendo pelo ralo da pia!"
+            },
+            {
+                q: "O que é o processo de 'adubação' que os agricultores fazem no solo?",
+                options: ["Tirar as pedras da terra", "Jogar nutrientes (adubo) para enriquecer o solo fraco", "Secar o solo molhado", "Cortar as raízes"],
+                answer: 1,
+                exp: "Quando a terra perde força, os agricultores adicionam adubos (orgânicos ou químicos) para devolver as vitaminas que as plantas precisam."
+            },
+            {
+                q: "Uma rocha metamórfica muito famosa, dura e brilhante, usada para fazer pias e estátuas é o:",
+                options: ["Carvão", "Argila", "Mármore", "Pó de giz"],
+                answer: 2,
+                exp: "O mármore é uma rocha metamórfica que originalmente era calcário, mas que 'assou' no calor e na pressão do fundo da Terra."
+            },
+            {
+                q: "Qual desses minerais a gente usa na cozinha todos os dias para dar gosto na comida?",
+                options: ["Quartzo", "Sal grosso (Halita)", "Ouro", "Ferro"],
+                answer: 1,
+                exp: "O sal de cozinha, conhecido na geologia como Halita, é um mineral natural que geralmente é extraído da água do mar ou de rochas subterrâneas."
+            },
+            {
+                q: "O que acontece com um vulcão quando ele entra em erupção?",
+                options: ["Ele cospe água fria", "O magma sobe à superfície, virando lava", "Ele suga as rochas para o núcleo", "O vulcão congela"],
+                answer: 1,
+                exp: "A pressão lá embaixo fica tão forte que empurra o magma para fora. Assim que o magma toca o ar livre, ele passa a ser chamado de lava."
+            },
+            {
+                q: "Para salvar o solo da erosão em morros inclinados, os agricultores costumam plantar em degraus. Essa técnica inteligente é chamada de:",
+                options: ["Desmatamento", "Queimada", "Plantio em curvas de nível ou terraços", "Compactação"],
+                answer: 2,
+                exp: "Plantar em formato de 'escada' ou curvas ajuda a frear a água da chuva, impedindo que ela desça rasgando a terra."
+            },
+            {
+                q: "Qual destes solos você levaria para a praia se quisesse fazer um castelo de areia firme que retenha água por mais tempo?",
+                options: ["O solo arenoso, pois ele não segura água", "Misturaria um pouco de argila com areia", "O calcário puro", "Solo de pedras grandes"],
+                answer: 1,
+                exp: "A areia pura (arenoso) não segura a água, então o castelo seca e desmorona. Com um pouquinho de argila, a água fica retida e a escultura fica firme!"
+            }
+        ]
+    },
+    biologia: {
+        title: "🐸 Biologia e Ecologia",
+        questions: [
+            // Metamorfose e Reprodução
+            { 
+                q: "Na metamorfose do sapo, ele nasce de um ovo na água. Como é chamado o filhote que nada e respira por guelras antes de virar sapo?", 
+                visual: `<div style="font-size: 40px;">🥚 ➔ ❓ ➔ 🐸</div>`,
+                options: ["Largata", "Girino", "Ninfa", "Alevino"], 
+                answer: 1, 
+                exp: "O girino vive na água, tem cauda para nadar e respira como um peixe. Só depois ele desenvolve patas e pulmões para ir para a terra." 
+            },
+            {
+                q: "Como as borboletas se reproduzem e passam pela metamorfose?",
+                visual: `<div style="font-size: 40px;">🐛 ➔ 🦋</div>`,
+                options: ["Ovo, Lagarta, Pupa (Casulo), Borboleta", "Ovo, Girino, Borboleta", "Nascem diretamente prontas do ovo", "Lagarta, Ovo, Borboleta"],
+                answer: 0,
+                exp: "A borboleta bota o ovo. Dele sai a lagarta. Ela se fecha no casulo (pupa) e sofre a metamorfose até criar asas e virar adulta.",
+                video: "https://www.youtube.com/results?search_query=metamorfose+da+borboleta+infantil"
+            },
+            {
+                q: "Animais que se desenvolvem e nascem de dentro de OVOS (como galinhas, jacarés e sapos) são chamados de:",
+                options: ["Vivíparos", "Mamíferos", "Ovíparos", "Herbívoros"],
+                answer: 2,
+                exp: "Ovíparo vem da palavra ovo. A maioria dos répteis, aves, anfíbios e peixes são ovíparos."
+            },
+            {
+                q: "Animais que se desenvolvem dentro da barriga da mãe (como humanos, cachorros e baleias) são chamados de:",
+                options: ["Ovíparos", "Vivíparos", "Invertebrados", "Anfíbios"],
+                answer: 1,
+                exp: "Vivíparos são os animais onde o filhote cresce dentro do corpo da fêmea até estar pronto para nascer."
+            },
+            {
+                q: "O que significa a palavra 'Metamorfose' na natureza?",
+                options: ["Trocar de pele", "Dormir durante o inverno", "A grande transformação do corpo de um animal desde que nasce até a fase adulta", "Mudar de cor para se esconder"],
+                answer: 2,
+                exp: "Metamorfose é uma mudança drástica na forma do corpo, como a lagarta que rasteja e depois vira uma borboleta que voa."
+            },
+            // Cadeias e Teias Alimentares
+            { 
+                q: "Em uma cadeia alimentar simples (Capim ➔ Gafanhoto ➔ Sapo), quem é o PRODUTOR?", 
+                options: ["Gafanhoto", "Sapo", "Capim", "O Sol"], 
+                answer: 2, 
+                exp: "Os produtores são sempre as plantas, pois elas 'produzem' seu próprio alimento usando a fotossíntese (luz do sol). Animais não produzem, apenas consomem." 
+            },
+            {
+                q: "Qual é o papel dos fungos e bactérias na natureza?",
+                options: ["Eles são produtores primários", "Eles são decompositores", "Eles são consumidores terciários", "Eles não servem para nada"],
+                answer: 1,
+                exp: "Eles são a equipe de limpeza! Os decompositores reciclam a matéria, comendo restos de folhas e animais mortos e devolvendo nutrientes para o solo."
+            },
+            {
+                q: "Em uma cadeia alimentar, o animal que se alimenta exclusivamente de plantas é chamado de:",
+                options: ["Consumidor Primário (Herbívoro)", "Consumidor Secundário (Carnívoro)", "Decompositor", "Produtor"],
+                answer: 0,
+                exp: "Ele é 'primário' porque é o primeiro animal da fila a comer. Como ele come o produtor (planta), ele é um herbívoro."
+            },
+            { 
+                q: "O que é uma Teia Alimentar?", 
+                options: ["Uma armadilha feita por aranhas gigantes", "Muitas cadeias alimentares que se cruzam em um ecossistema", "A dieta de um animal carnívoro", "Uma linha reta de quem come quem"], 
+                answer: 1, 
+                exp: "Na natureza as regras não são uma linha reta. Um gavião pode comer uma cobra, mas também pode comer um rato. Esse emaranhado complexo de opções forma uma teia." 
+            },
+            {
+                q: "O que acontece se uma espécie (como os sapos) desaparecer de uma cadeia alimentar?",
+                options: ["Nada acontece", "Apenas a espécie que come o sapo sofre", "Causa um desequilíbrio ecológico em toda a teia", "Os produtores somem"],
+                answer: 2,
+                exp: "Na natureza está tudo conectado. Sem sapos, o número de insetos pode crescer sem controle (virando praga), e os animais que comiam sapos podem passar fome."
+            },
+            // Relações Ecológicas
+            {
+                q: "Como as abelhas e formigas vivem na natureza?",
+                options: ["Sozinhas e isoladas", "Em Sociedade, dividindo as tarefas e cooperando", "Em parasitismo", "Em competição direta"],
+                answer: 1,
+                exp: "Na relação de sociedade, indivíduos da mesma espécie trabalham juntos em funções diferentes (rainha, operárias, guardas) para o bem do grupo."
+            },
+            {
+                q: "O pássaro-palito entra na boca do crocodilo para comer restos de comida nos dentes dele. O pássaro ganha comida e o crocodilo fica com dentes limpos. Isso é um exemplo de:",
+                options: ["Competição", "Predação", "Mutualismo (cooperação)", "Parasitismo"],
+                answer: 2,
+                exp: "No mutualismo, as duas espécies diferentes interagem e AMBAS saem ganhando, sem ninguém se machucar."
+            },
+            {
+                q: "O carrapato gruda na pele de um cachorro para sugar o sangue dele. O carrapato ganha alimento, mas o cachorro fica fraco e doente. Que relação ecológica é essa?",
+                options: ["Sociedade", "Parasitismo", "Mutualismo", "Cooperação"],
+                answer: 1,
+                exp: "No parasitismo, uma espécie (o parasita) se aproveita da outra (o hospedeiro), causando prejuízos e doenças a ele."
+            },
+            {
+                q: "Quando dois leões brigam por território ou por comida na savana, estamos vendo uma relação de:",
+                options: ["Parasitismo", "Sociedade", "Mutualismo", "Competição"],
+                answer: 3,
+                exp: "A competição ocorre quando seres vivos disputam pelos mesmos recursos, como água, comida, luz ou território."
+            },
+            {
+                q: "A aranha tece uma teia para capturar e devorar uma mosca. Essa relação onde um animal caça o outro para se alimentar é a:",
+                options: ["Sociedade", "Decomposição", "Predação", "Parasitismo"],
+                answer: 2,
+                exp: "A predação é a clássica relação entre o caçador (predador) e a sua caça (presa)."
+            }
+          ,{
+                q: "Os seres vivos que possuem uma coluna vertebral (ossos nas costas) são classificados como:",
+                options: ["Invertebrados", "Insetos", "Vertebrados", "Plantas"],
+                answer: 2,
+                exp: "Humanos, cachorros, peixes, sapos e cobras são exemplos de animais vertebrados, pois possuem esqueleto com coluna vertebral."
+            },
+            {
+                q: "Os animais herbívoros (que só comem plantas) costumam ser chamados na cadeia alimentar de:",
+                options: ["Consumidores Secundários", "Produtores", "Decompositores", "Consumidores Primários"],
+                answer: 3,
+                exp: "Como eles são os primeiros a comer na fila, se alimentando diretamente das plantas (produtores), são chamados de consumidores primários."
+            },
+            {
+                q: "Qual nome damos a um animal que está no TOPO da cadeia alimentar e não possui predadores naturais (como o Leão ou a Orca)?",
+                options: ["Presa", "Predador Topo de Cadeia (Consumidor Final)", "Decompositor", "Herbívoro gigante"],
+                answer: 1,
+                exp: "Eles são os 'reis' da teia. Ninguém caça eles para comer, eles apenas caçam outros consumidores."
+            },
+            {
+                q: "Animais onívoros são aqueles que:",
+                visual: `<div style="font-size: 50px;">🐻 🧑</div>`,
+                options: ["Só comem carne", "Só comem plantas", "Comem tanto plantas quanto carne de outros animais", "Vivem apenas de água"],
+                answer: 2,
+                exp: "Humanos, ursos e porcos são onívoros, pois nosso sistema digestivo consegue processar vegetais, frutas e carnes."
+            },
+            {
+                q: "O processo mágico onde as plantas absorvem a luz do sol, o gás carbônico e a água para produzir sua própria comida se chama:",
+                options: ["Metamorfose", "Respiração Pulmonar", "Fotossíntese", "Decomposição"],
+                answer: 2,
+                exp: "A fotossíntese é essencial para a vida na Terra. Além de alimentar a planta, ela libera o oxigênio que nós respiramos!",
+                video: "https://www.youtube.com/results?search_query=fotossíntese+explicacao+infantil"
+            },
+            {
+                q: "Quando um lagarto fica com a mesma cor e textura do tronco da árvore para não ser visto por um gavião, dizemos que ele está usando a:",
+                options: ["Camuflagem", "Metamorfose", "Mutualismo", "Migração"],
+                answer: 0,
+                exp: "A camuflagem é uma técnica de sobrevivência na ecologia. O animal se disfarça no ambiente para fugir de predadores ou para conseguir caçar de surpresa."
+            },
+            {
+                q: "A orquídea vive em cima dos galhos de árvores altas apenas para alcançar a luz do Sol, mas não suga nada da árvore. Essa relação ecológica se chama:",
+                options: ["Parasitismo", "Inquilinismo (ou Epifitismo)", "Predação", "Competição"],
+                answer: 1,
+                exp: "O Inquilinismo é quando uma espécie 'aluga' um espaço na outra apenas para morar, mas não faz mal nenhum a ela."
+            },
+            {
+                q: "Na natureza, o lugar específico onde uma espécie vive (como o fundo do mar para os tubarões ou a copa das árvores para os micos) é chamado de:",
+                options: ["Ecossistema", "Biosfera", "Habitat", "Sociedade"],
+                answer: 2,
+                exp: "O Habitat é o 'endereço' natural de um animal ou planta, onde ele encontra o clima, a comida e o abrigo ideais para viver."
+            },
+            {
+                q: "Quando os pinguins saem do Polo Sul gelado e nadam longas distâncias para o Brasil buscando águas mais quentes no inverno, dizemos que eles fizeram uma:",
+                options: ["Hibernação", "Migração", "Metamorfose", "Competição"],
+                answer: 1,
+                exp: "A migração é uma grande viagem que várias espécies de aves, peixes e mamíferos fazem para fugir do frio e achar comida."
+            },
+            {
+                q: "Um urso passa o inverno inteiro dormindo dentro de uma caverna, com os batimentos do coração bem lentos para economizar energia. O nome disso é:",
+                options: ["Camuflagem", "Hibernação", "Predação", "Sociedade"],
+                answer: 1,
+                exp: "Durante a hibernação, o corpo do animal funciona em 'câmera lenta', gastando a gordura acumulada enquanto o frio extremo não passa."
+            },
+            {
+                q: "Se cortarmos as florestas e destruirmos os habitats, os animais podem sumir para sempre do planeta. Qual é a palavra para quando uma espécie deixa de existir?",
+                options: ["Extinção", "Metamorfose", "Evolução", "Migração"],
+                answer: 0,
+                exp: "Extinção é quando morre o último indivíduo de uma espécie, como aconteceu com os dinossauros. Por isso proteger o meio ambiente é vital."
+            },
+            {
+                q: "O tubarão é o caçador, e o peixe menor é caçado. Como os chamamos na ecologia?",
+                options: ["Tubarão = Presa, Peixe = Predador", "Ambos são produtores", "Tubarão = Predador, Peixe = Presa", "Eles são uma sociedade"],
+                answer: 2,
+                exp: "Predador é o animal que caça, e presa é o animal que serve de alimento."
+            },
+            {
+                q: "Como o sapo adulto respira quando sai da água e vai viver na terra?",
+                options: ["Pelas guelras (brânquias)", "Pelos pulmões e pela pele úmida", "Pelas orelhas", "Ele não respira"],
+                answer: 1,
+                exp: "Diferente do girino (que respira por guelras na água), o sapo adulto respira por pulmões, mas também puxa muito oxigênio através de sua pele, que precisa estar sempre úmida."
+            },
+            {
+                q: "Uma árvore produz frutas. O mico come a fruta e joga a semente longe. Nasce outra árvore! Qual é o tipo de relação?",
+                options: ["Predação (a árvore morre)", "Mutualismo (os dois se ajudam)", "Competição", "Parasitismo"],
+                answer: 1,
+                exp: "É um mutualismo lindo! O mico ganha o alimento (a fruta) e a árvore ganha um transportador para espalhar suas sementes na floresta."
+            },
+            {
+                q: "Insetos, aranhas e crustáceos (caranguejos) têm uma 'carapaça' dura por fora que funciona como esqueleto. Como chamamos esses animais sem ossos?",
+                options: ["Vertebrados", "Anfíbios", "Invertebrados", "Répteis"],
+                answer: 2,
+                exp: "Eles são invertebrados (não possuem coluna vertebral interna). Essa carapaça externa se chama exoesqueleto."
+            }
+        ]
+    }
+};
+
+const goals = [
+    { id: "primeira_descoberta", req: 1, name: "🌟 Jovem Explorador" },
+    { id: "cientista_10", req: 10, name: "🔬 Assistente de Laboratório (10 acertos)" },
+    { id: "cientista_50", req: 50, name: "🚀 Astronauta e Pesquisador (50 acertos)" },
+    { id: "cientista_100", req: 100, name: "🏅 Prêmio Nobel da Ciência (100 acertos)" } 
+];
+
+let progress = JSON.parse(localStorage.getItem('cienciaProgress')) || {};
+let currentTopic = '';
+let currentQuestionObj = null; 
+let questionsAnswered = 0;
+const QUESTIONS_PER_ROUND = 5; // Em Ciências as perguntas são mais longas, rodadas de 5 ficam melhores
+let hasAnswered = false;
+let currentRoundDeck = []; 
+
+function initApp() {
+    const container = document.getElementById('topics-container');
+    container.innerHTML = '';
+    let totalCorrect = 0;
+
+    for (const key in db) {
+        if (!progress[key]) progress[key] = { correct: 0, wrong: 0, acertadas: [] };
+        totalCorrect += progress[key].correct;
+        
+        const btn = document.createElement('button');
+        btn.className = 'topic-btn';
+        btn.innerHTML = `${db[key].title} <span class="stats">✅ ${progress[key].correct} | ❌ ${progress[key].wrong}</span>`;
+        btn.onclick = () => startTopic(key);
+        container.appendChild(btn);
+    }
+    
+    document.getElementById('total-score').innerText = `Descobertas Totais: ${totalCorrect}`;
+    renderBadges(totalCorrect);
+}
+
+function renderBadges(totalCorrect) {
+    const container = document.getElementById('badges-container');
+    container.innerHTML = '';
+    goals.forEach(g => {
+        const badge = document.createElement('span');
+        badge.className = `badge ${totalCorrect >= g.req ? 'unlocked' : ''}`;
+        badge.innerText = g.name;
+        container.appendChild(badge);
+    });
+}
+
+function saveProgress() { localStorage.setItem('cienciaProgress', JSON.stringify(progress)); }
+
+function startTopic(key) {
+    currentTopic = key;
+    questionsAnswered = 0;
+    currentRoundDeck = [];
+    
+    if (!progress[key].acertadas) progress[key].acertadas = [];
+    
+    let allStatic = [...db[key].questions];
+    let unseenStatic = allStatic.filter(q => !progress[key].acertadas.includes(q.q));
+    
+    if (unseenStatic.length === 0) {
+        progress[key].acertadas = [];
+        unseenStatic = [...allStatic];
+    }
+    
+    unseenStatic.sort(() => Math.random() - 0.5); 
+    
+    // Como não há geradores matemáticos aqui, apenas usamos o baralho fixo
+    while (currentRoundDeck.length < QUESTIONS_PER_ROUND && unseenStatic.length > 0) {
+        let newQuestion = unseenStatic.pop();
+        if (!currentRoundDeck.some(q => q.q === newQuestion.q)) {
+            currentRoundDeck.push(newQuestion);
+        }
+    }
+    
+    // Se o banco for menor que a rodada (neste exemplo inicial), completa embaralhando
+    if(currentRoundDeck.length < QUESTIONS_PER_ROUND) {
+       let extra = [...allStatic].sort(() => Math.random() - 0.5);
+       while(currentRoundDeck.length < QUESTIONS_PER_ROUND) {
+           let popExtra = extra.pop();
+           if(!currentRoundDeck.some(q => q.q === popExtra.q)) currentRoundDeck.push(popExtra);
+       }
+    }
+    
+    document.getElementById('menu-view').classList.remove('active-view');
+    document.getElementById('quiz-view').classList.add('active-view');
+    document.getElementById('quiz-title').innerText = `${db[key].title}`;
+    loadQuestion();
+}
+
+function loadQuestion() {
+    hasAnswered = false;
+    currentQuestionObj = currentRoundDeck[questionsAnswered]; 
+    
+    document.getElementById('question-text').innerText = currentQuestionObj.q;
+    
+    const visualDiv = document.getElementById('visual-container');
+    visualDiv.innerHTML = currentQuestionObj.visual ? currentQuestionObj.visual : '';
+    visualDiv.style.display = currentQuestionObj.visual ? 'flex' : 'none';
+    
+    document.getElementById('explanation').style.display = 'none';
+    document.getElementById('btn-explanation').style.display = 'none';
+    document.getElementById('btn-video').style.display = 'none'; // Esconde botão de vídeo
+    document.getElementById('btn-next').style.display = 'none';
+    
+    const optionsDiv = document.getElementById('options-container');
+    optionsDiv.innerHTML = '';
+    
+    currentQuestionObj.options.forEach((opt, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = opt;
+        btn.onclick = () => checkAnswer(index, btn);
+        optionsDiv.appendChild(btn);
+    });
+}
+
+function checkAnswer(selectedIndex, btnElement) {
+    if (hasAnswered) return;
+    hasAnswered = true;
+    
+    const isCorrect = selectedIndex === currentQuestionObj.answer;
+    const options = document.getElementById('options-container').children;
+
+    if (isCorrect) {
+        btnElement.classList.add('correct');
+        progress[currentTopic].correct++;
+        if (!progress[currentTopic].acertadas) progress[currentTopic].acertadas = [];
+        if (!progress[currentTopic].acertadas.includes(currentQuestionObj.q)) {
+            progress[currentTopic].acertadas.push(currentQuestionObj.q);
+        }
+    } else {
+        btnElement.classList.add('wrong');
+        options[currentQuestionObj.answer].classList.add('correct'); 
+        progress[currentTopic].wrong++;
+    }
+
+    saveProgress();
+    questionsAnswered++;
+    
+    document.getElementById('btn-explanation').style.display = 'block';
+    
+    // NOVO: Mostra o botão de vídeo se a pergunta possuir um link cadastrado
+    if (currentQuestionObj.video) {
+        const btnVideo = document.getElementById('btn-video');
+        btnVideo.href = currentQuestionObj.video;
+        btnVideo.style.display = 'block';
+    }
+    
+    const btnNext = document.getElementById('btn-next');
+    btnNext.innerText = questionsAnswered >= QUESTIONS_PER_ROUND ? "Finalizar Rodada ➔" : "Próxima Questão ➔";
+    btnNext.style.display = 'block';
+}
+
+function showExplanation() {
+    const expDiv = document.getElementById('explanation');
+    expDiv.innerText = currentQuestionObj.exp;
+    expDiv.style.display = 'block';
+    document.getElementById('btn-explanation').style.display = 'none';
+}
+
+function nextQuestion() {
+    if (questionsAnswered < QUESTIONS_PER_ROUND) {
+        loadQuestion();
+    } else {
+        showMenu();
+    }
+}
+
+function showMenu() {
+    document.getElementById('quiz-view').classList.remove('active-view');
+    document.getElementById('menu-view').classList.add('active-view');
+    initApp();
+}
+
+initApp();
+    </script>
+</body>
+</html>
