@@ -222,32 +222,50 @@ const db = {
             { q: "Se uma receita pede 1,5 kg de farinha, quantos gramas você deve usar?", options: ["15 g", "150 g", "1500 g", "15000 g"], answer: 2, exp: "1 kg tem 1000 g e 0,5 kg tem 500 g. Somando, temos 1500 gramas." }
         ],
         generators: [
-            function() { // Gerador de conversão KG para G
-                let kg = Math.floor(Math.random() * 9) + 2; 
-                let g = kg * 1000;
-                let ans = `${g} g`;
-                let err1 = `${kg * 100} g`;
-                let err2 = `${kg * 10} g`;
-                let err3 = `${g + 1000} g`;
-                let opcoes = [ans, err1, err2, err3].sort(() => Math.random() - 0.5);
-                return {
-                    q: `Um pacote pesa ${kg} kg. Quantos gramas (g) ele tem?`,
-                    options: opcoes, answer: opcoes.indexOf(ans),
-                    exp: `Cada 1 kg equivale a 1000 g. Portanto, multiplicamos ${kg} por 1000, resultando em ${g} g.`
-                };
-            }
-            ,function() { // Gerador Visual Dinâmico de Combinações (Futebol)
-                let camisas = Math.floor(Math.random() * 4) + 2; // Sorteia de 2 a 5 camisas
-                let chuteiras = Math.floor(Math.random() * 3) + 2; // Sorteia de 2 a 4 chuteiras
+           function() { // Super Gerador Dinâmico de Conversões (Várias unidades)
+                const tipos = [
+                    { de: "kg", para: "g", mult: 1000, nome: "Um pacote pesa", singular: "quilo" },
+                    { de: "km", para: "m", mult: 1000, nome: "Uma estrada tem", singular: "quilômetro" },
+                    { de: "m", para: "cm", mult: 100, nome: "Uma corda tem", singular: "metro" },
+                    { de: "L", para: "ml", mult: 1000, nome: "Uma garrafa tem", singular: "litro" }
+                ];
+                let tipo = tipos[Math.floor(Math.random() * tipos.length)]; // Sorteia o tipo de medida
+                let valor = Math.floor(Math.random() * 9) + 2; 
+                let ans = valor * tipo.mult;
                 
-                // O JavaScript repete os emojis de acordo com os números sorteados
+                let err1 = valor * (tipo.mult / 10);
+                let err2 = valor * (tipo.mult * 10);
+                let err3 = ans + tipo.mult;
+                
+                let opcoes = [`${ans} ${tipo.para}`, `${err1} ${tipo.para}`, `${err2} ${tipo.para}`, `${err3} ${tipo.para}`];
+                opcoes = [...new Set(opcoes)];
+                while(opcoes.length < 4) opcoes.push(`${ans + (tipo.mult * 2)} ${tipo.para}`);
+                opcoes.sort(() => Math.random() - 0.5);
+                
+                return {
+                    q: `${tipo.nome} ${valor} ${tipo.de}. Quantos ${tipo.para} isso representa?`,
+                    options: opcoes, answer: opcoes.indexOf(`${ans} ${tipo.para}`),
+                    exp: `Cada 1 ${tipo.singular} equivale a ${tipo.mult} ${tipo.para}. Portanto, multiplicamos ${valor} por ${tipo.mult}, resultando em ${ans} ${tipo.para}.`
+                };
+            },
+            function() { // Super Gerador Visual de Combinações (Vários Emojis)
+                const temas = [
+                    { e1: '👕', e2: '👖', t1: 'camisas', t2: 'calças', acao: 'vestir' },
+                    { e1: '🍔', e2: '🥤', t1: 'lanches', t2: 'bebidas', acao: 'pedir' },
+                    { e1: '⚽', e2: '👟', t1: 'bolas', t2: 'chuteiras', acao: 'usar' },
+                    { e1: '🚗', e2: '🛣️', t1: 'carros', t2: 'caminhos', acao: 'escolher' }
+                ];
+                let tema = temas[Math.floor(Math.random() * temas.length)]; // Sorteia o emoji e o texto
+                let q1 = Math.floor(Math.random() * 4) + 2; 
+                let q2 = Math.floor(Math.random() * 3) + 2; 
+                
                 let visualCode = `<div style="font-size: 35px; text-align: center; background: #eef2f3; padding: 10px; border-radius: 10px;">
-                                    <div>${'⚽ '.repeat(camisas)}</div>
-                                    <div style="margin-top: 10px;">${'👟 '.repeat(chuteiras)}</div>
+                                    <div>${(tema.e1 + ' ').repeat(q1)}</div>
+                                    <div style="margin-top: 10px;">${(tema.e2 + ' ').repeat(q2)}</div>
                                  </div>`;
                 
-                let ans = camisas * chuteiras;
-                let err1 = camisas + chuteiras; // Erro comum: somar em vez de multiplicar
+                let ans = q1 * q2;
+                let err1 = q1 + q2; 
                 let err2 = ans + 2;
                 let err3 = ans - 2 || 1;
                 
@@ -257,11 +275,10 @@ const db = {
                 opcoes.sort(() => Math.random() - 0.5);
                 
                 return {
-                    q: `O Antonio tem ${camisas} bolas e ${chuteiras} pares de chuteira. Quantas combinações diferentes ele pode usar para jogar no campo?`,
+                    q: `Temos ${q1} ${tema.t1} e ${q2} ${tema.t2}. Quantas combinações diferentes podemos ${tema.acao}?`,
                     visual: visualCode,
-                    options: opcoes, 
-                    answer: opcoes.indexOf(ans.toString()),
-                    exp: `Para descobrir o número de combinações, multiplicamos as opções: ${camisas} bolas × ${chuteiras} chuteiras = ${ans} combinações.`
+                    options: opcoes, answer: opcoes.indexOf(ans.toString()),
+                    exp: `Multiplicamos as opções: ${q1} ${tema.t1} × ${q2} ${tema.t2} = ${ans} combinações.`
                 };
             }
         ]
@@ -363,15 +380,15 @@ function saveProgress() {
 // 4. LÓGICA DO QUIZ HÍBRIDO
 function getQuestion(topicKey) {
     const topic = db[topicKey];
-    // 50% de chance de usar o gerador dinâmico (se existir) OU 50% de puxar do banco estático
-    const useDynamic = topic.generators && topic.generators.length > 0 && Math.random() > 0.5;
+    
+    // Aumentamos a chance de cair questões estáticas (75% de chance)
+    // Os geradores dinâmicos agora aparecem apenas em 25% das vezes
+    const useDynamic = topic.generators && topic.generators.length > 0 && Math.random() > 0.75;
     
     if (useDynamic) {
-        // Sorteia um dos geradores dinâmicos do tema e o executa
         const genIndex = Math.floor(Math.random() * topic.generators.length);
         return topic.generators[genIndex]();
     } else {
-        // Sorteia uma questão das 20 fixas que criamos
         const statIndex = Math.floor(Math.random() * topic.questions.length);
         return topic.questions[statIndex];
     }
